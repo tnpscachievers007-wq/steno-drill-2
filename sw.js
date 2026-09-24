@@ -1,4 +1,4 @@
-const CACHE = "steno-drill-v1";
+const CACHE = "steno-drill-v2";
 const FILES = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", function (e) {
