@@ -1,0 +1,3545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0b0c10" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f4f5fa" media="(prefers-color-scheme: light)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Steno Drill">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Steno Drill — Shorthand Practice Trainer</title>
+<style>
+  :root{
+    --bg:#f4f5fa;
+    --header-bg:rgba(244,245,250,0.86);
+    --surface:#ffffff;
+    --surface-alt:#f7f7fc;
+    --surface-sunken:#eef0f7;
+    --border:#e4e6f0;
+    --border-strong:#d5d8e6;
+    --text:#181a22;
+    --text-soft:#6c7080;
+    --text-faint:#9a9eb0;
+    --accent:#5b5be0;
+    --accent-strong:#4a4ad4;
+    --accent-soft:#edecff;
+    --accent-contrast:#ffffff;
+    --good:#15a05e;
+    --good-soft:#e5f8ee;
+    --good-strong:#0e8a4e;
+    --bad:#e0405e;
+    --bad-soft:#fdecf0;
+    --bad-strong:#c62e4b;
+    --radius-xl:22px;
+    --radius-lg:16px;
+    --radius-md:12px;
+    --radius-sm:9px;
+    --radius-pill:999px;
+    --shadow-xs:0 1px 2px rgba(24,26,34,0.05);
+    --shadow-sm:0 2px 10px rgba(24,26,34,0.06);
+    --shadow-md:0 10px 30px -12px rgba(24,26,34,0.22);
+    --shadow-lg:0 24px 60px -20px rgba(24,26,34,0.32);
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --font-serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --font-mono:"SF Mono","Cascadia Code",Consolas,"Roboto Mono",Menlo,monospace;
+    --header-h:64px;
+    --tabbar-h:64px;
+    --safe-top:env(safe-area-inset-top,0px);
+    --safe-bottom:env(safe-area-inset-bottom,0px);
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0c0d12;
+      --header-bg:rgba(12,13,18,0.86);
+      --surface:#16171f;
+      --surface-alt:#1b1c26;
+      --surface-sunken:#101117;
+      --border:#282a37;
+      --border-strong:#34364682;
+      --text:#eef0f8;
+      --text-soft:#a2a6ba;
+      --text-faint:#6c7086;
+      --accent:#8586ff;
+      --accent-strong:#9d9eff;
+      --accent-soft:#211f3a;
+      --accent-contrast:#ffffff;
+      --good:#38d787;
+      --good-soft:#122a20;
+      --good-strong:#4fe39a;
+      --bad:#ff6b85;
+      --bad-soft:#301620;
+      --bad-strong:#ff8398;
+      --shadow-xs:0 1px 2px rgba(0,0,0,0.35);
+      --shadow-sm:0 2px 12px rgba(0,0,0,0.35);
+      --shadow-md:0 14px 34px -14px rgba(0,0,0,0.55);
+      --shadow-lg:0 28px 70px -24px rgba(0,0,0,0.6);
+      color-scheme:dark;
+    }
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    min-height:100dvh;
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--accent-soft); color:var(--accent-strong);}
+
+  .app-shell{
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+    min-height:100dvh;
+  }
+
+  /* ---------------- Header ---------------- */
+  .app-header{
+    position:sticky;
+    top:0;
+    z-index:20;
+    padding:calc(14px + var(--safe-top)) 18px 12px;
+    background:var(--header-bg);
+    -webkit-backdrop-filter:blur(16px) saturate(1.4);
+    backdrop-filter:blur(16px) saturate(1.4);
+    border-bottom:1px solid var(--border);
+  }
+  .app-header .title-row{
+    display:flex;
+    align-items:baseline;
+    gap:9px;
+  }
+  h1{
+    font-family:var(--font);
+    font-weight:800;
+    font-size:19px;
+    letter-spacing:-0.01em;
+    margin:0;
+    color:var(--text);
+  }
+  h1 .mark{
+    display:inline-block;
+    margin-right:1px;
+  }
+  .subtitle{
+    color:var(--text-faint);
+    font-size:11.5px;
+    margin-top:2px;
+    letter-spacing:0.01em;
+  }
+
+  /* ---------------- Main / panels ---------------- */
+  .app-main{
+    flex:1 1 auto;
+    width:100%;
+    max-width:640px;
+    margin:0 auto;
+    padding:16px 14px calc(28px + var(--tabbar-h) + var(--safe-bottom));
+  }
+  .panel{display:none;}
+  .panel.active{
+    display:block;
+    animation:panelIn .28s cubic-bezier(.22,.61,.36,1);
+  }
+  @keyframes panelIn{
+    from{opacity:0; transform:translateY(6px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  @keyframes riseIn{
+    from{opacity:0; transform:translateY(8px) scale(.99);}
+    to{opacity:1; transform:translateY(0) scale(1);}
+  }
+  @keyframes popIn{
+    from{opacity:0; transform:scale(.94);}
+    to{opacity:1; transform:scale(1);}
+  }
+
+  /* ---------------- Bottom tab bar ---------------- */
+  .tab-bar{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    z-index:30;
+    display:flex;
+    justify-content:center;
+    gap:6px;
+    padding:8px 14px calc(8px + var(--safe-bottom));
+    background:var(--header-bg);
+    -webkit-backdrop-filter:blur(16px) saturate(1.4);
+    backdrop-filter:blur(16px) saturate(1.4);
+    border-top:1px solid var(--border);
+  }
+  .tab-btn{
+    flex:1 1 0;
+    max-width:220px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    background:none;
+    border:none;
+    color:var(--text-faint);
+    font-family:inherit;
+    font-weight:600;
+    font-size:13.5px;
+    padding:10px 12px;
+    border-radius:var(--radius-md);
+    cursor:pointer;
+    transition:color .15s ease, background .15s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .tab-btn .ico{font-size:16px; line-height:1;}
+  .tab-btn.active{
+    color:var(--accent);
+    background:var(--accent-soft);
+  }
+  .tab-btn:active{transform:scale(.97);}
+
+  /* ---------------- Shared building blocks ---------------- */
+  .lib-box{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    padding:16px 16px 18px;
+    margin-bottom:14px;
+    box-shadow:var(--shadow-xs);
+    animation:riseIn .35s ease both;
+  }
+  .lib-box > summary{
+    list-style:none;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:16px 16px;
+    margin:-16px -16px -16px;
+    border-radius:var(--radius-lg);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .lib-box > summary::-webkit-details-marker{display:none;}
+  .lib-box[open] > summary{margin-bottom:12px; border-bottom:1px solid var(--border); border-radius:var(--radius-lg) var(--radius-lg) 0 0;}
+  .lib-box summary h3{margin:0;}
+  .lib-box summary .chev{
+    color:var(--text-faint);
+    font-size:12px;
+    transition:transform .2s ease;
+    flex-shrink:0;
+  }
+  .lib-box[open] summary .chev{transform:rotate(90deg);}
+  .lib-box .lib-box-body{padding:0 16px 4px;}
+
+  .lib-box h3{
+    margin:0 0 8px 0;
+    font-family:var(--font);
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:-0.01em;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .lib-box p.hint{
+    color:var(--text-soft);
+    font-size:12.5px;
+    margin:0 0 12px 0;
+    line-height:1.55;
+  }
+
+  label{color:var(--text-soft);}
+
+  textarea{
+    width:100%;
+    font-family:inherit;
+    font-size:14px;
+    padding:11px 12px;
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+    background:var(--surface-sunken);
+    color:var(--text);
+    resize:vertical;
+    min-height:100px;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  textarea:focus, input[type=text]:focus, input[type=number]:focus, select:focus{
+    outline:none;
+    border-color:var(--accent);
+    box-shadow:0 0 0 3px var(--accent-soft);
+  }
+  input[type=text]{
+    font-family:inherit;
+    font-size:14px;
+    padding:10px 12px;
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+    background:var(--surface-sunken);
+    color:var(--text);
+  }
+  input[type=file]{
+    font-family:inherit;
+    font-size:12px;
+    color:var(--text-soft);
+    margin-top:6px;
+    max-width:100%;
+  }
+  input[type=file]::file-selector-button{
+    font-family:inherit;
+    font-size:12px;
+    font-weight:600;
+    color:var(--text);
+    background:var(--surface-alt);
+    border:1px solid var(--border);
+    border-radius:var(--radius-pill);
+    padding:6px 12px;
+    margin-right:8px;
+    cursor:pointer;
+  }
+  input[type=checkbox]{
+    width:17px; height:17px;
+    accent-color:var(--accent);
+  }
+  select{
+    font-family:inherit;
+    font-size:12.5px;
+    color:var(--text);
+    background:var(--surface-sunken);
+    border:1px solid var(--border);
+    border-radius:var(--radius-pill);
+    padding:6px 10px;
+  }
+  .field-label{
+    display:block;
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--text-faint);
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    margin:12px 0 5px;
+  }
+
+  .lib-row{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    margin-top:12px;
+    flex-wrap:wrap;
+  }
+  .btn{
+    background:var(--accent);
+    color:var(--accent-contrast);
+    border:none;
+    padding:11px 18px;
+    font-family:inherit;
+    font-weight:600;
+    font-size:13.5px;
+    cursor:pointer;
+    border-radius:var(--radius-pill);
+    transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+    box-shadow:var(--shadow-sm);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .btn:active{transform:scale(.96);}
+  .btn.secondary{
+    background:var(--surface-alt);
+    color:var(--text);
+    border:1px solid var(--border);
+    box-shadow:none;
+  }
+  .btn.secondary.active{
+    background:var(--accent);
+    color:var(--accent-contrast);
+    border-color:var(--accent);
+  }
+  .btn:disabled{opacity:0.35; cursor:not-allowed; transform:none;}
+  .btn.small{padding:7px 13px; font-size:12.5px;}
+
+  .status-text{font-size:12px; color:var(--text-soft);}
+
+  .word-list{
+    margin-top:6px;
+    max-height:360px;
+    overflow-y:auto;
+    border-top:1px solid var(--border);
+    -webkit-overflow-scrolling:touch;
+  }
+  .word-row{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    padding:10px 0;
+    border-bottom:1px solid var(--border);
+    flex-wrap:wrap;
+  }
+  .word-row img{
+    width:44px; height:44px; object-fit:contain;
+    background:var(--surface-sunken);
+    border:1px solid var(--border);
+    border-radius:var(--radius-sm);
+  }
+  .word-row .no-img{
+    width:44px; height:44px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:9px; text-align:center; line-height:1.2;
+    color:var(--text-faint);
+    background:var(--surface-sunken);
+    border:1px dashed var(--border-strong);
+    border-radius:var(--radius-sm);
+  }
+  .word-row .wtext{flex:1; font-size:13px;}
+  .word-row input.inline-edit{
+    flex:1 1 120px; min-width:0; font-family:inherit; font-size:13.5px;
+    border:1px solid var(--border); border-radius:var(--radius-sm);
+    padding:7px 9px; background:var(--surface-sunken); color:var(--text);
+  }
+  .word-row .idx{color:var(--text-faint); font-size:11px; width:20px; flex-shrink:0;}
+  .empty-note{color:var(--text-faint); font-size:13px; padding:18px 4px; text-align:center;}
+  .audio-btn{
+    background:var(--surface-alt); border:1px solid var(--border); color:var(--text-soft);
+    width:30px; height:30px; border-radius:50%; cursor:pointer;
+    font-size:11px; display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; transition:all .15s ease;
+  }
+  .audio-btn.has-audio{border-color:var(--accent); color:var(--accent); background:var(--accent-soft);}
+  .audio-btn:disabled{opacity:0.3; cursor:not-allowed;}
+  input.audio-file{width:82px; font-size:9.5px;}
+  .card .audio-indicator{
+    position:absolute; bottom:12px; right:16px;
+    font-size:10.5px; color:var(--text-faint);
+    background:var(--surface-alt);
+    border:1px solid var(--border);
+    padding:3px 8px;
+    border-radius:var(--radius-pill);
+  }
+
+  /* ---- Trainer panel ---- */
+  details.settings-panel{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    margin-bottom:14px;
+    box-shadow:var(--shadow-xs);
+  }
+  details.settings-panel > summary{
+    list-style:none;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 16px;
+    font-weight:700;
+    font-size:13.5px;
+    -webkit-tap-highlight-color:transparent;
+  }
+  details.settings-panel > summary::-webkit-details-marker{display:none;}
+  details.settings-panel > summary .chev{color:var(--text-faint); font-size:12px; transition:transform .2s ease;}
+  details.settings-panel[open] > summary .chev{transform:rotate(90deg);}
+  details.settings-panel[open] > summary{border-bottom:1px solid var(--border);}
+  .settings-row{
+    display:flex; gap:14px; align-items:center;
+    font-size:12px; color:var(--text-soft);
+    flex-wrap:wrap;
+    padding:14px 16px 16px;
+  }
+  .settings-row label{display:flex; align-items:center; gap:6px; font-size:12px;}
+  .settings-row input[type=number]{
+    width:56px; font-family:inherit; font-size:12.5px;
+    padding:6px 7px; border:1px solid var(--border); border-radius:var(--radius-sm);
+    background:var(--surface-sunken); color:var(--text);
+  }
+  #masteredCount{
+    font-size:12px; font-weight:600; color:var(--accent);
+    background:var(--accent-soft);
+    padding:5px 11px;
+    border-radius:var(--radius-pill);
+  }
+
+  .chip-row{
+    display:flex; gap:8px; margin-bottom:12px;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    padding:2px 2px 8px;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .chip-row::-webkit-scrollbar{display:none;}
+  .chip-row .btn{white-space:nowrap; flex-shrink:0;}
+  .mode-row{
+    display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; align-items:center;
+  }
+  .style-btn.active{
+    background:var(--accent);
+    color:var(--accent-contrast);
+    border-color:var(--accent);
+  }
+  .tapzone-btn.active{
+    background:var(--accent);
+    color:var(--accent-contrast);
+    border-color:var(--accent);
+  }
+  .style-label{
+    color:var(--text-faint); font-size:11.5px; font-weight:600;
+    text-transform:uppercase; letter-spacing:0.03em;
+    width:100%; margin-bottom:2px;
+  }
+  .status-line{
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:12px; color:var(--text-soft);
+    margin-bottom:10px;
+    padding:0 2px;
+  }
+  .status-line span:first-child{font-weight:700; color:var(--text);}
+  .status-line span:last-child{
+    background:var(--surface-alt);
+    border:1px solid var(--border);
+    padding:4px 10px;
+    border-radius:var(--radius-pill);
+    font-size:11.5px;
+  }
+
+  .judge-row{
+    display:flex; gap:10px; margin-bottom:12px;
+    min-height:48px;
+  }
+  .judge-row button{
+    flex:1; font-family:inherit; font-weight:700; font-size:14px;
+    padding:12px; border-radius:var(--radius-lg); cursor:pointer;
+    border:1.5px solid var(--border);
+    background:var(--surface);
+    display:flex; align-items:center; justify-content:center; gap:7px;
+    transition:transform .12s ease, box-shadow .12s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .judge-row button:active:not(:disabled){transform:scale(.97);}
+  #knewBtn{border-color:var(--good); color:var(--good-strong); background:var(--good-soft);}
+  #knewBtn::before{content:"✓"; font-size:15px;}
+  #missedBtn{border-color:var(--bad); color:var(--bad-strong); background:var(--bad-soft);}
+  #missedBtn::before{content:"✕"; font-size:13px;}
+  .judge-row button:disabled{opacity:0.32; cursor:not-allowed;}
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-xl);
+    min-height:260px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:22px;
+    position:relative;
+    text-align:center;
+    cursor:pointer;
+    box-shadow:var(--shadow-md);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .card .direction-label{
+    display:none;
+  }
+  .card .countdown{
+    display:none;
+  }
+  .card img{
+    max-width:90%; max-height:150px; object-fit:contain;
+    background:#fff; border:1px solid var(--border); border-radius:var(--radius-md);
+    padding:10px;
+    animation:popIn .3s cubic-bezier(.22,.61,.36,1);
+  }
+  .reveal-wrap{
+    display:inline-block;
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+    padding:10px;
+    max-width:90%;
+    line-height:0;
+    animation:popIn .3s cubic-bezier(.22,.61,.36,1);
+  }
+  .reveal-wrap img{
+    display:block;
+    max-width:100%;
+    max-height:150px;
+    object-fit:contain;
+    -webkit-user-drag:none;
+    user-select:none;
+    background:none;
+    border:none;
+    padding:0;
+    border-radius:0;
+    animation:none;
+  }
+  #holdRevealBtn{
+    touch-action:none;
+    user-select:none;
+  }
+  .hold-reveal-slot{
+    min-height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-top:12px;
+  }
+  .hold-reveal-slot button{
+    width:80%;
+  }
+  .card .prompt-text{
+    font-family:var(--font-serif);
+    font-weight:600;
+    font-size:27px;
+    color:var(--text);
+    animation:riseIn .3s ease;
+  }
+  .card .answer-text{
+    margin-top:18px;
+    font-family:var(--font-serif);
+    font-weight:600;
+    font-size:22px;
+    color:var(--accent);
+    animation:riseIn .3s ease;
+  }
+  .card .no-image-note{color:var(--text-faint); font-size:12px; margin-top:8px;}
+
+  .nav-row{
+    display:flex; gap:8px; margin-top:14px;
+  }
+  .nav-row button{flex:1; padding:11px 6px; font-size:12.5px;}
+
+  .summary-box{
+    background:var(--surface);
+    border:1px solid var(--border);
+    padding:32px 24px;
+    text-align:center;
+    border-radius:var(--radius-xl);
+    box-shadow:var(--shadow-md);
+    animation:popIn .35s cubic-bezier(.22,.61,.36,1);
+  }
+  .summary-box h2{
+    font-family:var(--font);
+    font-weight:800;
+    margin-top:0;
+    font-size:20px;
+  }
+  .summary-box p{color:var(--text-soft); font-size:15px; line-height:1.7;}
+  .summary-box .btn{margin-top:6px;}
+
+  .idle-note{
+    color:var(--text-faint); font-size:13.5px; text-align:center; padding:44px 12px;
+  }
+
+  /* ---- Two-column trainer layout (tap zone lives on the right in
+     landscape — see the media query below). In portrait / on desktop
+     this is just a plain block and the tap zone stays hidden. ---- */
+  .trainer-columns{ display:block; }
+  .trainer-left{ width:100%; }
+  .trainer-tap-zone{
+    display:none;
+    align-items:center;
+    justify-content:center;
+    color:var(--text-faint);
+    font-size:11px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    border:1px dashed var(--border-strong);
+    border-radius:var(--radius-lg);
+    opacity:0.6;
+  }
+  /* position: none (default) — no split, left column takes full width */
+  .trainer-columns.pos-none .trainer-tap-zone{ display:none; }
+  .trainer-columns.pos-none .trainer-left{ flex:1 1 auto; max-width:100%; }
+  /* position: left — tap zone sits before the card */
+  .trainer-columns.pos-left .trainer-tap-zone{ order:-1; }
+
+  /* Phone in landscape: the page is short, so there's no room above or
+     below the card to tap without scrolling. Shrink the header/controls,
+     pin everything to the left, and dedicate the freed-up right-hand side
+     of the screen as an always-reachable "tap outside the card" zone. */
+  @media (orientation:landscape) and (max-height:540px){
+    .app-header{ padding:calc(6px + var(--safe-top)) 14px 6px; }
+    h1{ font-size:14px; }
+    .subtitle{ display:none; }
+    .app-main{ padding:10px 12px calc(16px + var(--tabbar-h) + var(--safe-bottom)); max-width:100%; }
+    details.settings-panel{ margin-bottom:8px; }
+    .settings-row{ padding:10px 12px 12px; gap:10px; }
+    .chip-row, .mode-row{ margin-bottom:8px; }
+    .status-line{ margin-bottom:6px; }
+    .judge-row{ min-height:38px; margin-bottom:6px; }
+    .card{ min-height:170px; padding:14px; border-radius:var(--radius-lg); }
+    .card img{ max-height:100px; }
+    .reveal-wrap img{ max-height:100px; }
+    .nav-row{ margin-top:8px; }
+
+    .trainer-columns{
+      display:flex;
+      align-items:stretch;
+      gap:12px;
+    }
+    .trainer-left{
+      flex:0 1 380px;
+      max-width:380px;
+      min-width:0;
+    }
+    .trainer-columns.pos-left .trainer-tap-zone,
+    .trainer-columns.pos-right .trainer-tap-zone{
+      display:flex;
+      flex:1;
+      min-height:170px;
+    }
+  }
+
+  @media (min-width:600px){
+    .app-header .title-row, .app-header{max-width:640px; margin:0 auto;}
+  }
+
+  /* ---------------- Big Focus mode button (bottom of the Trainer tab) ----------------
+     Fixed just above the tab bar. Only shown on the Trainer tab
+     (body.on-trainer) and never while Focus mode itself is on. */
+  #focusModeBtn{
+    display:none;
+    position:fixed;
+    left:0; right:0;
+    margin:0 auto;
+    bottom:calc(var(--tabbar-h) + var(--safe-bottom) - 4px);
+    z-index:25;
+    width:calc(100% - 28px);
+    max-width:612px;
+    height:58px;
+    align-items:center; justify-content:center; gap:10px;
+    font-family:inherit; font-size:18px; font-weight:800; letter-spacing:0.01em;
+    color:var(--accent-contrast);
+    background:var(--accent);
+    border:none;
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-md);
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+    transition:background .15s ease, transform .12s ease;
+  }
+  #focusModeBtn:hover{background:var(--accent-strong);}
+  #focusModeBtn:active{transform:scale(.98);}
+  body.on-trainer #focusModeBtn{display:flex;}
+  body.on-trainer:not(.focus-mode) .app-main{
+    padding-bottom:calc(28px + var(--tabbar-h) + var(--safe-bottom) + 76px);
+  }
+  body.focus-mode #focusModeBtn,
+  :fullscreen #focusModeBtn,
+  :-webkit-full-screen #focusModeBtn{display:none !important;}
+  @media (max-height:480px){
+    #focusModeBtn{height:46px; font-size:16px;}
+    body.on-trainer:not(.focus-mode) .app-main{
+      padding-bottom:calc(28px + var(--tabbar-h) + var(--safe-bottom) + 64px);
+    }
+  }
+
+  /* ---------------- Focus mode — card only, like a video ---------------- */
+  #exitFocusBtn{
+    display:none;
+    position:fixed;
+    top:calc(12px + var(--safe-top));
+    right:14px;
+    z-index:100;
+    width:38px; height:38px;
+    border-radius:50%;
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--text-soft);
+    font-size:15px;
+    line-height:1;
+    cursor:pointer;
+    box-shadow:var(--shadow-sm);
+    -webkit-tap-highlight-color:transparent;
+  }
+  #exitFocusBtn:active{transform:scale(.93);}
+
+  /* ---------------- Focus mode — "today" card count (top right) ----------------
+     Sits just left of the ✕ button. Shows knew+missed for today, focus-mode
+     sessions only. */
+  #fmTodayCount{
+    display:none;
+    position:fixed;
+    top:calc(12px + var(--safe-top));
+    right:60px;
+    z-index:100;
+    height:38px;
+    padding:0 14px;
+    align-items:center; justify-content:center;
+    font-family:inherit; font-size:13px; font-weight:700; line-height:1;
+    color:var(--text-soft);
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-pill);
+    box-shadow:var(--shadow-sm);
+    white-space:nowrap;
+    -webkit-tap-highlight-color:transparent;
+  }
+  @media (max-width:480px){
+    #fmTodayCount{right:52px; font-size:12px; padding:0 10px;}
+  }
+
+  /* ---------------- Focus mode — pace stopwatch (top centre) ----------------
+     Starts counting the moment a round begins. Every "paceSec" seconds an
+     extra card is expected; falling short turns the badge red and shows how
+     many cards are needed to catch back up to green. */
+  #fmPace{
+    display:none;
+    position:fixed;
+    top:calc(12px + var(--safe-top));
+    left:50%;
+    transform:translateX(-50%);
+    z-index:100;
+    height:38px;
+    padding:0 16px;
+    align-items:center; justify-content:center; gap:8px;
+    font-family:inherit; font-size:13px; font-weight:700; line-height:1;
+    color:var(--good-strong);
+    background:var(--good-soft);
+    border:1px solid var(--good);
+    border-radius:var(--radius-pill);
+    box-shadow:var(--shadow-sm);
+    white-space:nowrap;
+    -webkit-tap-highlight-color:transparent;
+    transition:background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  #fmPace .fp-time{font-variant-numeric:tabular-nums;}
+  #fmPace .fp-status{opacity:.9;}
+  #fmPace.pace-behind{
+    color:var(--bad-strong);
+    background:var(--bad-soft);
+    border-color:var(--bad);
+  }
+  :fullscreen #fmPace,
+  :-webkit-full-screen #fmPace,
+  body.focus-mode #fmPace{
+    display:flex;
+  }
+  @media (max-width:480px){
+    #fmPace{font-size:12px; padding:0 12px; gap:6px;}
+  }
+  @media (max-width:360px){
+    #fmPace .fp-status{display:none;}
+  }
+
+  html.focus-mode, body.focus-mode{overflow:hidden; height:100%;}
+
+  :fullscreen #exitFocusBtn,
+  :-webkit-full-screen #exitFocusBtn,
+  body.focus-mode #exitFocusBtn{
+    display:flex; align-items:center; justify-content:center;
+  }
+  :fullscreen #fmTodayCount,
+  :-webkit-full-screen #fmTodayCount,
+  body.focus-mode #fmTodayCount{
+    display:flex;
+  }
+
+  :fullscreen .app-header,
+  :fullscreen .tab-bar,
+  :fullscreen #panel-trainer > details.settings-panel,
+  :fullscreen #panel-trainer > .chip-row.mode-row,
+  :fullscreen #panel-trainer > .mode-row,
+  :fullscreen .status-line,
+  :fullscreen .judge-row,
+  :fullscreen .nav-row,
+  :fullscreen .trainer-tap-zone,
+  :-webkit-full-screen .app-header,
+  :-webkit-full-screen .tab-bar,
+  :-webkit-full-screen #panel-trainer > details.settings-panel,
+  :-webkit-full-screen #panel-trainer > .chip-row.mode-row,
+  :-webkit-full-screen #panel-trainer > .mode-row,
+  :-webkit-full-screen .status-line,
+  :-webkit-full-screen .judge-row,
+  :-webkit-full-screen .nav-row,
+  :-webkit-full-screen .trainer-tap-zone,
+  body.focus-mode .app-header,
+  body.focus-mode .tab-bar,
+  body.focus-mode #panel-trainer > details.settings-panel,
+  body.focus-mode #panel-trainer > .chip-row.mode-row,
+  body.focus-mode #panel-trainer > .mode-row,
+  body.focus-mode .status-line,
+  body.focus-mode .judge-row,
+  body.focus-mode .nav-row,
+  body.focus-mode .trainer-tap-zone{
+    display:none !important;
+  }
+
+  :fullscreen .app-main,
+  :-webkit-full-screen .app-main,
+  body.focus-mode .app-main{
+    max-width:100%;
+    height:100vh;
+    height:100dvh;
+    padding:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  :fullscreen #panel-trainer,
+  :-webkit-full-screen #panel-trainer,
+  body.focus-mode #panel-trainer{
+    width:100%; height:100%;
+    display:flex; align-items:center; justify-content:center;
+  }
+  :fullscreen #trainerBody,
+  :-webkit-full-screen #trainerBody,
+  body.focus-mode #trainerBody{
+    width:100%; height:100%;
+    display:flex; align-items:center; justify-content:center;
+    padding:22px;
+  }
+  :fullscreen .trainer-columns,
+  :-webkit-full-screen .trainer-columns,
+  body.focus-mode .trainer-columns{
+    width:100%; height:100%;
+    display:flex !important; align-items:center; justify-content:center;
+  }
+  :fullscreen .trainer-left,
+  :-webkit-full-screen .trainer-left,
+  body.focus-mode .trainer-left{
+    width:100%; max-width:560px;
+  }
+  :fullscreen .card,
+  :-webkit-full-screen .card,
+  body.focus-mode .card{
+    min-height:min(72vh,72dvh);
+    border-radius:28px;
+    padding:32px;
+  }
+  :fullscreen .card .prompt-text,
+  :-webkit-full-screen .card .prompt-text,
+  body.focus-mode .card .prompt-text{font-size:34px;}
+  :fullscreen .card .answer-text,
+  :-webkit-full-screen .card .answer-text,
+  body.focus-mode .card .answer-text{font-size:27px;}
+  :fullscreen .card img,
+  :fullscreen .reveal-wrap img,
+  :-webkit-full-screen .card img,
+  :-webkit-full-screen .reveal-wrap img,
+  body.focus-mode .card img,
+  body.focus-mode .reveal-wrap img{max-height:min(38vh,38dvh);}
+  :fullscreen .summary-box,
+  :-webkit-full-screen .summary-box,
+  body.focus-mode .summary-box{margin-top:0;}
+
+  /* ---------------- Focus mode — mode picker ----------------
+     Full-screen chooser shown when Focus mode is opened, and again each
+     time a round finishes while still in Focus mode. Sits below the exit
+     button (z-index 100) so the ✕ always stays reachable. */
+  .fm-picker{
+    display:none;
+    position:fixed;
+    top:0; right:0; bottom:0; left:0;
+    z-index:90;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    background:var(--bg);
+    padding:calc(60px + var(--safe-top)) 18px calc(24px + var(--safe-bottom));
+  }
+  .fm-picker.open{display:flex;}
+  body:not(.focus-mode) .fm-picker{display:none !important;}
+  .fm-picker-inner{
+    margin:auto;
+    width:100%;
+    max-width:560px;
+    animation:popIn .3s cubic-bezier(.22,.61,.36,1);
+  }
+  .fm-picker h2{
+    margin:0 0 6px;
+    text-align:center;
+    font-weight:800;
+    font-size:21px;
+    letter-spacing:-0.01em;
+    color:var(--text);
+  }
+  .fm-picker .fm-msg{
+    margin:0 0 20px;
+    text-align:center;
+    font-size:14px;
+    line-height:1.6;
+    color:var(--text-soft);
+  }
+  .fm-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:10px;
+  }
+  .fm-opt{
+    display:block;
+    width:100%;
+    text-align:left;
+    font-family:inherit;
+    color:var(--text);
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    padding:16px 18px;
+    cursor:pointer;
+    box-shadow:var(--shadow-xs);
+    transition:border-color .15s ease, background .15s ease, transform .12s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .fm-opt:hover{border-color:var(--accent); background:var(--accent-soft);}
+  .fm-opt:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .fm-opt:active{transform:scale(.98);}
+  .fm-opt .t{display:block; font-weight:700; font-size:15px;}
+  .fm-opt .s{display:block; margin-top:3px; font-size:12px; color:var(--text-soft);}
+
+  /* ---------------- Focus mode — side Previous / Next buttons ----------------
+     Left and right edge of the screen, vertically centred. Only shown in
+     Focus mode while a card is on screen (the app toggles .fm-has-card). */
+  #fmPrevBtn, #fmNextBtn{
+    display:none;
+    position:fixed;
+    top:calc(50% - 44px);
+    width:46px; height:88px;
+    z-index:40;
+    align-items:center; justify-content:center;
+    padding:0 0 4px;
+    font-family:inherit; font-size:34px; line-height:1;
+    color:var(--text-soft);
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-sm);
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #fmPrevBtn{left:calc(8px + env(safe-area-inset-left,0px));}
+  #fmNextBtn{right:calc(8px + env(safe-area-inset-right,0px));}
+  #fmPrevBtn:active, #fmNextBtn:active{transform:scale(.94);}
+  #fmPrevBtn:disabled, #fmNextBtn:disabled{opacity:.3; cursor:not-allowed; transform:none;}
+  body.focus-mode.fm-has-card #fmPrevBtn,
+  body.focus-mode.fm-has-card #fmNextBtn{display:flex;}
+
+  /* ---------------- Focus mode — Pause button (top left) ---------------- */
+  #fmPauseBtn{
+    display:none;
+    position:fixed;
+    top:calc(12px + var(--safe-top));
+    left:calc(14px + env(safe-area-inset-left,0px));
+    z-index:40;
+    height:38px;
+    padding:0 16px;
+    align-items:center; justify-content:center; gap:6px;
+    font-family:inherit; font-size:14px; font-weight:700; line-height:1;
+    color:var(--text-soft);
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-pill);
+    box-shadow:var(--shadow-sm);
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #fmPauseBtn:active{transform:scale(.95);}
+  #fmPauseBtn.paused{
+    color:var(--accent-contrast);
+    background:var(--accent);
+    border-color:var(--accent);
+  }
+  body.focus-mode.fm-has-card #fmPauseBtn{display:flex;}
+  /* keep the card clear of the side buttons */
+  body.focus-mode.fm-has-card #trainerBody{padding-left:62px; padding-right:62px;}
+  @media (max-width:480px){
+    #fmPrevBtn, #fmNextBtn{width:38px; font-size:30px;}
+    #fmPrevBtn{left:calc(4px + env(safe-area-inset-left,0px));}
+    #fmNextBtn{right:calc(4px + env(safe-area-inset-right,0px));}
+    body.focus-mode.fm-has-card #trainerBody{padding-left:46px; padding-right:46px;}
+    body.focus-mode.fm-has-card .card{padding:24px 16px;}
+  }
+  /* ---- added features ---- */
+  .card{position:relative;}
+  .card .speak-btn{position:absolute; right:8px; bottom:8px; padding:4px 9px; font-size:14px;}
+  .goal-wrap{height:12px; border-radius:99px; background:var(--surface-sunken); overflow:hidden; margin:8px 0 6px;}
+  .goal-fill{height:100%; background:var(--accent); border-radius:99px; transition:width .4s ease;}
+  .goal-fill.done{background:var(--good);}
+  .stat-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+  .stat-card{background:var(--surface-alt); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px 6px; text-align:center;}
+  .stat-card b{display:block; font-size:21px;}
+  .stat-card span{font-size:11.5px; color:var(--text-soft);}
+  .bars{display:flex; align-items:flex-end; gap:4px; height:96px; margin-top:8px;}
+  .bar-col{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; font-size:10px; color:var(--text-faint); gap:3px;}
+  .bar{width:100%; background:var(--accent); border-radius:5px 5px 0 0; opacity:.85;}
+  .bar.hit{background:var(--good);}
+  .hard-row{display:flex; justify-content:space-between; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); font-size:14px;}
+  .hard-row small{color:var(--text-soft); text-align:right;}
+  .missed-list{margin-top:18px; text-align:left;}
+  .ml-title{font-weight:700; font-size:13px; margin-bottom:8px; color:var(--text-soft);}
+  .chip-miss{display:inline-block; background:var(--bad-soft); color:var(--bad-strong); border-radius:99px; padding:4px 10px; margin:0 6px 6px 0; font-size:13px;}
+  .word-row.dup{outline:2px solid var(--bad); outline-offset:-2px; border-radius:8px;}
+  #libSearch{width:100%; margin:8px 0 4px;}
+  .extra-settings{border-top:1px solid var(--border);}
+  body.focus-mode .kbd-hint, :fullscreen .kbd-hint, :-webkit-full-screen .kbd-hint{display:none !important;}
+  body.txt-sm .card .prompt-text, body.txt-sm .card .answer-text{zoom:.85;}
+  body.txt-lg .card .prompt-text, body.txt-lg .card .answer-text{zoom:1.3;}
+  body.txt-xl .card .prompt-text, body.txt-xl .card .answer-text{zoom:1.6;}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <header class="app-header">
+    <div class="title-row">
+      <h1><span class="mark">✍️</span> Steno Drill</h1>
+    </div>
+    <div class="subtitle">shorthand practice trainer — timed recall</div>
+  </header>
+
+  <main class="app-main">
+
+    <!-- ============ LIBRARY PANEL ============ -->
+    <div class="panel active" id="panel-library">
+
+      <details class="lib-box" open>
+        <summary><h3>➕ Add words in bulk</h3><span class="chev">›</span></summary>
+        <div class="lib-box-body">
+          <p class="hint">Paste one word or phrase per line, in the order you want them to appear. Then choose the matching stroke images — select them in the same order (most file pickers keep the order you click them in, or sort by filename to be safe). The nth image is paired with the nth line. Audio clips (optional) are matched the same way, sorted by filename.</p>
+          <textarea id="bulkWords" placeholder="there their&#10;which&#10;because"></textarea>
+          <span class="field-label">Stroke images (optional)</span>
+          <input type="file" id="bulkImages" accept="image/*" multiple>
+          <span class="field-label">Audio clips (optional)</span>
+          <input type="file" id="bulkAudio" accept="audio/*" multiple>
+          <div class="lib-row">
+            <button class="btn" id="bulkAddBtn">Add to library</button>
+            <span id="bulkStatus" class="status-text"></span>
+          </div>
+        </div>
+      </details>
+
+      <details class="lib-box">
+        <summary><h3>📄 Import from an HTML file</h3><span class="chev">›</span></summary>
+        <div class="lib-box-body">
+          <p class="hint">Upload another Steno Drill file (one made with "Download shareable copy" below) and its whole library — words, stroke images, and audio — is imported directly. Uploading any other .html file instead pulls out its text (paragraphs, list items, headings, etc.) and embedded images in order, pairing the nth image with the nth line of text.</p>
+          <div class="lib-row">
+            <input type="file" id="importHtmlFile" accept=".html,.htm,text/html" style="display:none;">
+            <button class="btn secondary small" id="importHtmlBtn">Upload HTML file</button>
+            <span id="importHtmlStatus" class="status-text"></span>
+          </div>
+        </div>
+      </details>
+
+      <details class="lib-box">
+        <summary><h3>✏️ Add one word</h3><span class="chev">›</span></summary>
+        <div class="lib-box-body">
+          <div class="lib-row">
+            <input type="text" id="singleWord" placeholder="word or phrase" style="flex:1;">
+          </div>
+          <span class="field-label">Stroke image (optional)</span>
+          <input type="file" id="singleImage" accept="image/*">
+          <span class="field-label">Audio clip (optional)</span>
+          <input type="file" id="singleAudio" accept="audio/*">
+          <div class="lib-row">
+            <button class="btn" id="singleAddBtn">Add word</button>
+          </div>
+        </div>
+      </details>
+
+      <div class="lib-box">
+        <h3>📚 Library <span id="libCount" style="color:var(--text-faint); font-weight:500; font-size:12.5px;"></span></h3>
+        <div class="lib-row">
+          <button class="btn secondary small" id="exportBtn">Export library (.json)</button>
+          <input type="file" id="importFile" accept=".json" style="display:none;">
+          <button class="btn secondary small" id="importBtn">Import library</button>
+          <button class="btn secondary small" id="clearLibBtn">Clear library</button>
+        </div>
+        <div class="lib-row">
+          <button class="btn secondary small" id="exportImagesBtn">Export images (.zip, in order)</button>
+          <span id="exportImagesStatus" class="status-text"></span>
+        </div>
+        <div class="lib-row">
+          <button class="btn small" id="downloadSharedBtn">⬇️ Download shareable copy (.html)</button>
+          <span id="downloadSharedStatus" class="status-text"></span>
+        </div>
+        <p class="hint">Your words, images and audio are only saved in this browser. If you just share this file as-is, whoever opens it will see an empty library. Use this button to make a copy with everything already loaded inside — that copy is safe to send.</p>
+        <div class="lib-row">
+          <button class="btn secondary small" id="showWordsBtn">Show all words as text</button>
+          <button class="btn secondary small" id="copyWordsBtn" style="display:none;">Copy</button>
+          <span id="copyWordsStatus" class="status-text"></span>
+        </div>
+        <textarea id="wordsAsText" readonly style="display:none; width:100%; min-height:120px; margin-bottom:10px;"></textarea>
+        <p class="hint">Fixing a misalignment: click into the word box, then press <strong>Enter</strong> where you want to split. The text to the right of the cursor drops down into the next row, and every word below moves down one (the images stay put). Press <strong>Backspace</strong> with the cursor at the very start of a word box to attach that word to the end of the word above it; every word below moves up one, so the images line up again.</p>
+        <input type="text" id="libSearch" placeholder="Search words… (rows with the same word get a red outline)">
+        <div class="status-text" id="libSearchStatus"></div>
+        <div class="word-list" id="wordList"></div>
+      </div>
+
+    </div>
+
+    <!-- ============ TRAINER PANEL ============ -->
+    <div class="panel" id="panel-trainer">
+
+      <details class="settings-panel">
+        <summary>⚙️ Timing &amp; reveal settings <span class="chev">›</span></summary>
+        <div class="settings-row">
+          <label>auto-reveal after <input type="number" id="revealSec" min="0" value="1000"> s</label>
+          <label>auto-miss after <input type="number" id="missSec" min="0" value="1000"> s</label>
+          <label>image reveal takes <input type="number" id="holdRevealSec" min="0.2" step="0.1" value="2"> s (hold)</label>
+          <label>image reveal: <select id="revealModeSel">
+            <option value="hold">hold-to-reveal button</option>
+            <option value="instant" selected>instant (no button)</option>
+          </select></label>
+          <label><input type="checkbox" id="autoHoldEnabled"> auto-hold after <input type="number" id="autoHoldSec" min="0" step="0.5" value="3" style="width:50px"> s</label>
+          <button class="btn secondary small" id="applySettingsBtn">Apply</button>
+        </div>
+        <div class="settings-row extra-settings">
+          <label>cards per round <input type="number" id="roundLimit" min="0" value="0" style="width:56px"> (0 = all)</label>
+          <label>pace target <input type="number" id="paceSec" min="1" value="30" style="width:56px"> s per card (focus mode)</label>
+          <label>pace clock <select id="paceModeSel"><option value="stopwatch">stopwatch (counts from round start)</option><option value="realtime">real time (fixed clock schedule)</option></select></label>
+          <label id="paceRangeRow" style="display:none">schedule <input type="time" id="paceStartTime" value="08:00"> to <input type="time" id="paceEndTime" value="20:00"></label>
+          <label>card text <select id="cardTextSel"><option value="sm">small</option><option value="md">normal</option><option value="lg">large</option><option value="xl">extra large</option></select></label>
+          <label><input type="checkbox" id="autoPauseChk"> pause when I leave the page</label>
+          <label><input type="checkbox" id="keepAwakeChk"> keep screen on</label>
+          <label><input type="checkbox" id="ttsChk"> read word aloud if no audio clip</label>
+          <label>voice <select id="ttsLangSel"><option value="en-IN">English (India)</option><option value="en-US">English (US)</option><option value="en-GB">English (UK)</option><option value="ta-IN">Tamil</option></select></label>
+        </div>
+      </details>
+
+      <div class="chip-row mode-row">
+        <button class="btn secondary small" id="modeS2W">Stroke → Word (in order)</button>
+        <button class="btn secondary small" id="modeS2Wshuf">Stroke → Word (shuffled)</button>
+        <button class="btn secondary small" id="modeW2S">Word → Stroke (in order)</button>
+        <button class="btn secondary small" id="modeW2Sshuf">Word → Stroke (shuffled)</button>
+        <button class="btn secondary small" id="modeCombined">Combined Round (shuffled)</button>
+        <button class="btn secondary small" id="modeWeak">Weak spots</button>
+        <button class="btn secondary small" id="reshuffleBtn">🔀 Reshuffle</button>
+        <button class="btn secondary small" id="resetBtn">↺ Reset progress</button>
+      </div>
+
+      <div class="mode-row" style="margin-bottom:4px;">
+        <span id="masteredCount"></span>
+      </div>
+
+      <div class="mode-row">
+        <span class="style-label">Reveal button</span>
+        <button class="btn secondary small style-btn" id="styleDefault" data-style="default">Standard</button>
+        <button class="btn secondary small style-btn" id="styleKnew" data-style="knewit">Reveal → Knew it</button>
+        <button class="btn secondary small style-btn active" id="styleNext" data-style="next">Reveal → Next</button>
+      </div>
+
+      <div class="mode-row">
+        <span class="style-label">Tap zone (landscape phone)</span>
+        <button class="btn secondary small tapzone-btn active" id="tapzoneNone" data-tapzone="none">None</button>
+        <button class="btn secondary small tapzone-btn" id="tapzoneLeft" data-tapzone="left">Left</button>
+        <button class="btn secondary small tapzone-btn" id="tapzoneRight" data-tapzone="right">Right</button>
+      </div>
+
+      <p class="hint kbd-hint">Keys: Space, Enter or R reveals. K = knew it. M = missed it. Left or B = previous. Right or N = next. U = undo. P = pause. S = say the word. F = focus mode.</p>
+
+      <div id="trainerBody">
+        <div class="idle-note">Choose a mode above to start a session.</div>
+      </div>
+
+    </div>
+
+    <div class="panel" id="panel-progress"><div id="progressBody"></div></div>
+
+  </main>
+
+  <nav class="tab-bar">
+    <button class="tab-btn active" data-tab="library"><span class="ico">📚</span>Library</button>
+    <button class="tab-btn" data-tab="trainer"><span class="ico">🎯</span>Trainer</button>
+    <button class="tab-btn" data-tab="progress"><span class="ico">📊</span>Progress</button>
+  </nav>
+
+  <button id="focusModeBtn" type="button" onclick="document.querySelector('.tab-btn[data-tab=trainer]') &amp;&amp; document.querySelector('.tab-btn[data-tab=trainer]').click(); document.documentElement.classList.add('focus-mode'); document.body.classList.add('focus-mode');">🎬 Focus mode</button>
+
+  <button id="exitFocusBtn" type="button" aria-label="Exit focus mode" onclick="document.documentElement.classList.remove('focus-mode'); document.body.classList.remove('focus-mode');">✕</button>
+
+  <div id="fmTodayCount" aria-hidden="true">0 today</div>
+
+  <div id="fmPace" aria-hidden="true"><span class="fp-time">0:00</span><span class="fp-status">on pace</span></div>
+
+  <button id="fmPauseBtn" type="button" aria-label="Pause" title="Pause or resume the timer">⏸ Pause</button>
+
+  <button id="fmPrevBtn" type="button" aria-label="Previous card" title="Previous card">‹</button>
+  <button id="fmNextBtn" type="button" aria-label="Next card" title="Next card">›</button>
+
+</div>
+
+<script>
+// ---------------- Focus mode: mode picker ----------------
+// Kept in its own script *above* the main one on purpose: the main script
+// takes a snapshot of the page for "Download shareable copy", and anything
+// placed after it would be missing from those copies.
+//
+// It never touches app state. It only:
+//  1. opens a mode chooser whenever the Focus mode button is clicked, and
+//  2. opens the same chooser again whenever a round finishes while Focus
+//     mode is still on (spotted by the "Round complete" box appearing).
+// Choosing a mode just clicks the matching (hidden) mode button, so the
+// normal startMode() logic does the real work.
+(function(){
+  "use strict";
+  var focusBtn = document.getElementById("focusModeBtn");
+  var trainerBody = document.getElementById("trainerBody");
+  if(!focusBtn || !trainerBody) return;
+
+  var MODE_IDS = ["modeS2W", "modeS2Wshuf", "modeW2S", "modeW2Sshuf", "modeCombined"];
+  var picker = null, titleEl = null, msgEl = null, gridEl = null;
+
+  function isFocus(){ return document.body.classList.contains("focus-mode"); }
+  function isOpen(){ return !!picker && picker.classList.contains("open"); }
+
+  function build(){
+    if(picker) return;
+    picker = document.createElement("div");
+    picker.className = "fm-picker";
+    picker.setAttribute("role", "dialog");
+    picker.setAttribute("aria-modal", "true");
+    picker.setAttribute("aria-label", "Choose a mode");
+
+    var inner = document.createElement("div");
+    inner.className = "fm-picker-inner";
+    titleEl = document.createElement("h2");
+    msgEl = document.createElement("p");
+    msgEl.className = "fm-msg";
+    gridEl = document.createElement("div");
+    gridEl.className = "fm-grid";
+    inner.appendChild(titleEl);
+    inner.appendChild(msgEl);
+    inner.appendChild(gridEl);
+    picker.appendChild(inner);
+
+    // Clicks inside the picker must not reach the app's "tap anywhere to
+    // reveal / advance" handler on document.
+    picker.addEventListener("click", function(e){ e.stopPropagation(); });
+    document.body.appendChild(picker);
+  }
+
+  function fillOptions(){
+    gridEl.innerHTML = "";
+    MODE_IDS.forEach(function(id){
+      var src = document.getElementById(id);
+      var text = src ? src.textContent.trim() : "";
+      if(!text) return;
+      // "Stroke → Word (shuffled)" -> title + small subtitle
+      var m = text.match(/^(.*?)\s*\((.*)\)\s*$/);
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "fm-opt";
+      var t = document.createElement("span");
+      t.className = "t";
+      t.textContent = m ? m[1] : text;
+      btn.appendChild(t);
+      if(m){
+        var s = document.createElement("span");
+        s.className = "s";
+        s.textContent = m[2];
+        btn.appendChild(s);
+      }
+      btn.addEventListener("click", function(){ choose(id); });
+      gridEl.appendChild(btn);
+    });
+  }
+
+  // info: null for the first open, or {empty} after a finished round
+  function open(info){
+    build();
+    fillOptions();
+    if(info){
+      if(info.empty){
+        titleEl.textContent = "Nothing left in that mode";
+        msgEl.textContent = "Every card in it is already mastered. Choose another mode.";
+      } else {
+        titleEl.textContent = "Round complete";
+        msgEl.textContent = "Choose the next mode.";
+      }
+    } else {
+      titleEl.textContent = "Choose a mode";
+      msgEl.textContent = "Pick how you want to practise.";
+    }
+    picker.classList.add("open");
+    picker.scrollTop = 0;
+  }
+
+  function close(){
+    if(picker) picker.classList.remove("open");
+  }
+
+  function choose(id){
+    close();
+    var b = document.getElementById(id);
+    if(b) b.click();
+  }
+
+  // 1. Focus mode button -> ask for a mode
+  focusBtn.addEventListener("click", function(){ open(null); });
+
+  // 2. Round finished while in Focus mode -> ask again
+  new MutationObserver(function(){
+    if(!isFocus() || isOpen()) return;
+    var box = trainerBody.querySelector(".summary-box");
+    if(!box) return;
+    var empty = /Nothing to practise/.test(box.textContent || "");
+    open({ empty: empty });
+  }).observe(trainerBody, { childList: true });
+
+  // Leaving Focus mode (✕, Esc, or the browser's own fullscreen exit)
+  // also dismisses the picker.
+  new MutationObserver(function(){
+    if(!isFocus()) close();
+  }).observe(document.body, { attributes: true, attributeFilter: ["class"] });
+
+  // While the picker is open, Space must not trigger the trainer's
+  // "Knew it" shortcut on the card hidden behind it.
+  window.addEventListener("keydown", function(e){
+    if(isOpen() && (e.code === "Space" || e.key === " ")) e.stopPropagation();
+  }, true);
+})();
+</script>
+
+<script>
+(function(){
+  "use strict";
+
+  // Snapshot of the page exactly as it was when it loaded from disk, taken
+  // before anything below touches the DOM. "Download shareable copy" is
+  // built from this frozen snapshot instead of the live page, so whichever
+  // tab you're on, a session mid-way through, or a panel left open can
+  // never leak into (or corrupt) the file you hand to someone else.
+  var PRISTINE_HTML = document.documentElement.outerHTML;
+
+  // Baked into a downloaded shareable copy so it gets its own storage
+  // bucket, instead of sharing one with the master file or with other
+  // shared copies opened in the same browser. (Browsers treat local files
+  // opened straight from disk as one shared storage origin, so without
+  // this, two copies opened in the same browser would show each other's
+  // libraries, or silently overwrite one another.) Leave this as null in
+  // the master/editing copy.
+  var FILE_INSTANCE_ID = null;
+
+  var STORAGE_KEY = "stenoDrillState_v1" + (FILE_INSTANCE_ID ? ("_" + FILE_INSTANCE_ID) : "");
+
+  // When a shareable copy is downloaded (see downloadSharedCopy below), the
+  // current library gets baked in here so the file works for whoever opens
+  // it next, even with empty browser storage. Leave this as null in the
+  // master/editing copy — it only gets filled in the generated download.
+  var EMBEDDED_STATE = null;
+
+  var state = {
+    words: [],                 // [{id, text, image, audio}]
+    mastery: {},                // itemId -> true
+    settings: { revealSec: 1000, missSec: 1000, revealStyle: "next", holdRevealSec: 2, revealMode: "instant", autoHoldEnabled: false, autoHoldSec: 3, tapZonePosition: "none", paceSec: 30, paceMode: "stopwatch", paceStart: "08:00", paceEnd: "20:00" },
+    session: null                // {mode, queue:[itemId], skipStack:[itemId], knew, missed, revealed}
+  };
+
+  state.stats = {}; state.daily = {}; state.goal = 20;
+
+  function uid(){ return "w" + Math.random().toString(36).slice(2,10) + Date.now().toString(36); }
+
+  function save(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }catch(e){
+      console.warn("Could not save progress (storage may be full):", e);
+    }
+  }
+
+  function load(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        var parsed = JSON.parse(raw);
+        state.words = parsed.words || [];
+        state.mastery = parsed.mastery || {};
+        state.stats = parsed.stats || {}; state.daily = parsed.daily || {}; state.goal = parsed.goal || 20;
+        state.settings = Object.assign({ revealSec: 1000, missSec: 1000, revealStyle: "next", holdRevealSec: 2, revealMode: "instant", autoHoldEnabled: false, autoHoldSec: 3, tapZonePosition: "none", paceSec: 30, paceMode: "stopwatch", paceStart: "08:00", paceEnd: "20:00" }, parsed.settings || {});
+        state.session = parsed.session || null;
+        return;
+      }
+    }catch(e){ console.warn("Could not load saved progress:", e); }
+    // Nothing in this browser's storage yet — fall back to whatever library
+    // was baked into this file (present in files made with "Download
+    // shareable copy"), and save it so it persists from here on.
+    if(EMBEDDED_STATE){
+      try{
+        state.words = EMBEDDED_STATE.words || [];
+        state.settings = EMBEDDED_STATE.settings || state.settings;
+        save();
+      }catch(e){ console.warn("Could not load embedded library:", e); }
+    }
+  }
+
+  function fileToDataURL(file){
+    return new Promise(function(resolve, reject){
+      var r = new FileReader();
+      r.onload = function(){ resolve(r.result); };
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+  }
+
+  var activeAudio = null;
+  function playAudio(src){
+    if(!src) return;
+    if(activeAudio){
+      activeAudio.pause();
+      activeAudio = null;
+    }
+    activeAudio = new Audio(src);
+    activeAudio.play().catch(function(e){ console.warn("Audio playback failed:", e); });
+  }
+  function stopAudio(){
+    try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){}
+    if(activeAudio){
+      activeAudio.pause();
+      activeAudio = null;
+    }
+  }
+
+  // ---------------- Tabs ----------------
+  document.querySelectorAll(".tab-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.remove("active"); });
+      document.querySelectorAll(".panel").forEach(function(p){ p.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
+      document.body.classList.toggle("on-trainer", btn.dataset.tab === "trainer");
+      if(btn.dataset.tab !== "trainer") stopAudio();
+      if(btn.dataset.tab === "trainer") renderTrainer();
+      if(btn.dataset.tab === "progress") renderProgress();
+      syncWake();
+    });
+  });
+
+  // ---------------- Library rendering ----------------
+  function renderLibrary(){
+    document.getElementById("libCount").textContent = "(" + state.words.length + " words, " + (state.words.length*2) + " items)";
+    var list = document.getElementById("wordList");
+    list.innerHTML = "";
+    if(state.words.length === 0){
+      list.innerHTML = '<div class="empty-note">No words yet. Add some above.</div>';
+      return;
+    }
+    state.words.forEach(function(w, i){
+      var row = document.createElement("div");
+      row.className = "word-row";
+
+      var idx = document.createElement("div");
+      idx.className = "idx";
+      idx.textContent = (i+1) + ".";
+      row.appendChild(idx);
+
+      var insBtn = document.createElement("button");
+      insBtn.className = "btn secondary small";
+      insBtn.textContent = "+";
+      insBtn.title = "Insert a new blank word above this one — this row and everything below it shifts down by one";
+      insBtn.style.flex = "0 0 auto";
+      insBtn.addEventListener("click", function(){
+        var blank = { id: uid(), text: "", image: null, audio: null };
+        state.words.splice(i, 0, blank);
+        save();
+        renderLibrary();
+        var rows = document.querySelectorAll(".word-row");
+        var newRow = rows[i];
+        var newInput = newRow && newRow.querySelector("input.inline-edit");
+        if(newInput) newInput.focus();
+      });
+      row.appendChild(insBtn);
+
+      if(w.image){
+        var img = document.createElement("img");
+        img.src = w.image;
+        row.appendChild(img);
+      } else {
+        var ni = document.createElement("div");
+        ni.className = "no-img";
+        ni.textContent = "no image";
+        row.appendChild(ni);
+      }
+
+      var txt = document.createElement("input");
+      txt.type = "text";
+      txt.className = "inline-edit";
+      txt.value = w.text;
+      txt.title = "Edit this word/phrase. Enter = split at the cursor: the text on the right drops down to the next row and everything below moves down one. Backspace at the start of the box = join this word to the word above and pull everything below up one.";
+      txt.addEventListener("change", function(){
+        var v = txt.value.trim();
+        if(v){
+          w.text = v;
+          save();
+        } else {
+          txt.value = w.text; // don't allow blanking it out
+        }
+      });
+      txt.addEventListener("keydown", function(e){
+        if(e.key === "Enter"){
+          e.preventDefault();
+          // Commit what's typed on THIS row, then push every word below it
+          // down by one slot. Images never move — only the text realigns.
+          // A fresh blank slot appears right after this row, ready for the
+          // word that belongs to the next image.
+          // If the cursor is in the middle of the text, the part to the
+          // right of the cursor drops down into the next row.
+          var selA = txt.selectionStart, selB = txt.selectionEnd;
+          if(selA === null || selA === undefined){ selA = selB = txt.value.length; }
+          var leftPart = txt.value.slice(0, selA).replace(/\s+$/, "");
+          var rightPart = txt.value.slice(selB).replace(/^\s+/, "");
+          w.text = leftPart;
+          delete state.mastery[w.id + "::s2w"];
+          delete state.mastery[w.id + "::w2s"];
+          state.words.push({ id: uid(), text: "", image: null, audio: null });
+          for(var j = state.words.length - 1; j > i + 1; j--){
+            state.words[j].text = state.words[j-1].text;
+            state.words[j].audio = state.words[j-1].audio;
+            delete state.mastery[state.words[j].id + "::s2w"];
+            delete state.mastery[state.words[j].id + "::w2s"];
+          }
+          state.words[i+1].text = rightPart;
+          state.words[i+1].audio = null;
+          delete state.mastery[state.words[i+1].id + "::s2w"];
+          delete state.mastery[state.words[i+1].id + "::w2s"];
+          save();
+          renderLibrary();
+          var rows = document.querySelectorAll(".word-row");
+          var newInput = rows[i+1] && rows[i+1].querySelector("input.inline-edit");
+          if(newInput){
+            newInput.focus();
+            newInput.setSelectionRange(0, 0);
+          }
+        } else if(e.key === "Backspace" && i > 0 &&
+                  txt.selectionStart === 0 && txt.selectionEnd === 0){
+          e.preventDefault();
+          // Backspace with the cursor at the very start of the box: this
+          // row's text goes UP and attaches to the end of the word above,
+          // and every word below moves up by one row. Images never move.
+          var prevWord = state.words[i-1];
+          var joinAt = prevWord.text.length;
+          prevWord.text = prevWord.text + txt.value;
+          delete state.mastery[prevWord.id + "::s2w"];
+          delete state.mastery[prevWord.id + "::w2s"];
+          for(var m = i; m < state.words.length - 1; m++){
+            state.words[m].text = state.words[m+1].text;
+            state.words[m].audio = state.words[m+1].audio;
+            delete state.mastery[state.words[m].id + "::s2w"];
+            delete state.mastery[state.words[m].id + "::w2s"];
+          }
+          var lastIdx2 = state.words.length - 1;
+          state.words[lastIdx2].text = "";
+          state.words[lastIdx2].audio = null;
+          delete state.mastery[state.words[lastIdx2].id + "::s2w"];
+          delete state.mastery[state.words[lastIdx2].id + "::w2s"];
+          // The bottom slot is now empty. If it has no image either,
+          // drop it so no blank row is left dangling.
+          if(!state.words[lastIdx2].image){
+            state.words.pop();
+          }
+          save();
+          renderLibrary();
+          var rows3 = document.querySelectorAll(".word-row");
+          var joinInput = rows3[i-1] && rows3[i-1].querySelector("input.inline-edit");
+          if(joinInput){
+            joinInput.focus();
+            joinInput.setSelectionRange(joinAt, joinAt);
+          }
+        } else if((e.key === "Backspace" || e.key === "Delete") && txt.value === ""){
+          e.preventDefault();
+          // This row's word is gone. Pull every word below it up by one
+          // slot so this row's image now matches whatever word used to
+          // be underneath it. Images never move.
+          for(var k = i; k < state.words.length - 1; k++){
+            state.words[k].text = state.words[k+1].text;
+            state.words[k].audio = state.words[k+1].audio;
+            delete state.mastery[state.words[k].id + "::s2w"];
+            delete state.mastery[state.words[k].id + "::w2s"];
+          }
+          var lastIdx = state.words.length - 1;
+          state.words[lastIdx].text = "";
+          state.words[lastIdx].audio = null;
+          delete state.mastery[state.words[lastIdx].id + "::s2w"];
+          delete state.mastery[state.words[lastIdx].id + "::w2s"];
+          // Tidy up: if that trailing slot is now empty with no image
+          // (and isn't the row we're sitting in), drop it instead of
+          // leaving a dangling blank row.
+          if(lastIdx !== i && state.words[lastIdx].text === "" && !state.words[lastIdx].image){
+            state.words.pop();
+          }
+          save();
+          renderLibrary();
+          var rows2 = document.querySelectorAll(".word-row");
+          var focusIdx = Math.min(i, rows2.length - 1);
+          var focusInput = rows2[focusIdx] && rows2[focusIdx].querySelector("input.inline-edit");
+          if(focusInput){
+            focusInput.focus();
+            focusInput.setSelectionRange(0, 0);
+          }
+        }
+      });
+      row.appendChild(txt);
+
+      var playBtn = document.createElement("button");
+      playBtn.className = "audio-btn" + (w.audio ? " has-audio" : "");
+      playBtn.textContent = "▶";
+      playBtn.title = w.audio ? "Play audio" : "No audio saved";
+      playBtn.disabled = !w.audio;
+      playBtn.addEventListener("click", function(){
+        if(w.audio) playAudio(w.audio);
+      });
+      row.appendChild(playBtn);
+
+      var repAudio = document.createElement("input");
+      repAudio.type = "file";
+      repAudio.accept = "audio/*";
+      repAudio.className = "audio-file";
+      repAudio.title = "Replace audio clip";
+      repAudio.addEventListener("change", function(){
+        if(repAudio.files[0]){
+          fileToDataURL(repAudio.files[0]).then(function(url){
+            w.audio = url;
+            save();
+            renderLibrary();
+          });
+        }
+      });
+      row.appendChild(repAudio);
+
+      var repImg = document.createElement("input");
+      repImg.type = "file";
+      repImg.accept = "image/*";
+      repImg.style.width = "90px";
+      repImg.style.fontSize = "10px";
+      repImg.title = "Replace stroke image";
+      repImg.addEventListener("change", function(){
+        if(repImg.files[0]){
+          fileToDataURL(repImg.files[0]).then(function(url){
+            w.image = url;
+            save();
+            renderLibrary();
+          });
+        }
+      });
+      row.appendChild(repImg);
+
+      var delBtn = document.createElement("button");
+      delBtn.className = "btn secondary small";
+      delBtn.textContent = "Remove";
+      delBtn.addEventListener("click", function(){
+        state.words = state.words.filter(function(x){ return x.id !== w.id; });
+        delete state.mastery[w.id + "::s2w"];
+        delete state.mastery[w.id + "::w2s"];
+        save();
+        renderLibrary();
+      });
+      row.appendChild(delBtn);
+
+      list.appendChild(row);
+    });
+    applyLibFilter();
+  }
+
+  document.getElementById("bulkAddBtn").addEventListener("click", function(){
+    var lines = document.getElementById("bulkWords").value
+      .split("\n")
+      .map(function(s){ return s.trim(); })
+      .filter(function(s){ return s.length > 0; });
+    var files = Array.prototype.slice.call(document.getElementById("bulkImages").files || []);
+    files.sort(function(a,b){ return a.name.localeCompare(b.name, undefined, {numeric:true}); });
+    var audioFiles = Array.prototype.slice.call(document.getElementById("bulkAudio").files || []);
+    audioFiles.sort(function(a,b){ return a.name.localeCompare(b.name, undefined, {numeric:true}); });
+
+    if(lines.length === 0){
+      document.getElementById("bulkStatus").textContent = "Add at least one word line first.";
+      return;
+    }
+
+    Promise.all([
+      Promise.all(files.map(fileToDataURL)),
+      Promise.all(audioFiles.map(fileToDataURL))
+    ]).then(function(results){
+      var urls = results[0];
+      var audioUrls = results[1];
+      lines.forEach(function(text, i){
+        state.words.push({ id: uid(), text: text, image: urls[i] || null, audio: audioUrls[i] || null });
+      });
+      save();
+      renderLibrary();
+      document.getElementById("bulkWords").value = "";
+      document.getElementById("bulkImages").value = "";
+      document.getElementById("bulkAudio").value = "";
+      var note = urls.length < lines.length
+        ? " (" + (lines.length - urls.length) + " words had no matching image — add them later from the list)"
+        : "";
+      var audioNote = audioUrls.length < lines.length
+        ? " (" + (lines.length - audioUrls.length) + " words had no matching audio — add them later from the list)"
+        : "";
+      document.getElementById("bulkStatus").textContent = "Added " + lines.length + " words." + note + audioNote;
+    });
+  });
+
+  document.getElementById("singleAddBtn").addEventListener("click", function(){
+    var text = document.getElementById("singleWord").value.trim();
+    if(!text) return;
+    var file = document.getElementById("singleImage").files[0];
+    var audioFile = document.getElementById("singleAudio").files[0];
+    function finish(url, audioUrl){
+      state.words.push({ id: uid(), text: text, image: url || null, audio: audioUrl || null });
+      save();
+      renderLibrary();
+      document.getElementById("singleWord").value = "";
+      document.getElementById("singleImage").value = "";
+      document.getElementById("singleAudio").value = "";
+    }
+    Promise.all([
+      file ? fileToDataURL(file) : Promise.resolve(null),
+      audioFile ? fileToDataURL(audioFile) : Promise.resolve(null)
+    ]).then(function(r){ finish(r[0], r[1]); });
+  });
+
+  document.getElementById("exportBtn").addEventListener("click", function(){
+    var blob = new Blob([JSON.stringify({words:state.words, mastery:state.mastery, settings:state.settings, stats:state.stats, daily:state.daily, goal:state.goal}, null, 2)], {type:"application/json"});
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "steno-drill-library.json";
+    a.click();
+  });
+
+  // ---------------- Export images as a zip, in library order ----------------
+  function loadJSZip(cb){
+    if(window.JSZip){ cb(); return; }
+    var s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js";
+    s.onload = cb;
+    s.onerror = function(){
+      document.getElementById("exportImagesStatus").textContent = "Could not load the zip tool — check your internet connection and try again.";
+    };
+    document.head.appendChild(s);
+  }
+  function dataURLtoBlob(dataUrl){
+    var parts = dataUrl.split(",");
+    var meta = parts[0];
+    var mimeMatch = meta.match(/data:([^;]+)/);
+    var mime = mimeMatch ? mimeMatch[1] : "application/octet-stream";
+    var binary = atob(parts[1]);
+    var bytes = new Uint8Array(binary.length);
+    for(var i=0;i<binary.length;i++) bytes[i] = binary.charCodeAt(i);
+    return new Blob([bytes], {type:mime});
+  }
+  function extFromMime(mime){
+    var map = {"image/png":"png","image/jpeg":"jpg","image/jpg":"jpg","image/gif":"gif","image/webp":"webp","image/svg+xml":"svg"};
+    return map[mime] || "png";
+  }
+  document.getElementById("exportImagesBtn").addEventListener("click", function(){
+    var statusEl = document.getElementById("exportImagesStatus");
+    var withImg = state.words.filter(function(w){ return !!w.image; });
+    if(withImg.length === 0){
+      statusEl.textContent = "No images saved in the library yet.";
+      return;
+    }
+    statusEl.textContent = "Preparing…";
+    loadJSZip(function(){
+      if(!window.JSZip){ return; }
+      var zip = new JSZip();
+      var n = 0;
+      state.words.forEach(function(w){
+        if(!w.image) return;
+        n++;
+        var mimeMatch = w.image.match(/data:([^;]+)/);
+        var mime = mimeMatch ? mimeMatch[1] : "image/png";
+        var ext = extFromMime(mime);
+        var safeName = w.text.replace(/[\\/:*?"<>|]/g, "_").slice(0,60);
+        var num = (n < 10 ? "0" : "") + n;
+        var filename = num + " - " + safeName + "." + ext;
+        zip.file(filename, dataURLtoBlob(w.image));
+      });
+      zip.generateAsync({type:"blob"}).then(function(blob){
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "steno-drill-images.zip";
+        a.click();
+        statusEl.textContent = "Downloaded " + n + " images, in library order.";
+      });
+    });
+  });
+
+  document.getElementById("importBtn").addEventListener("click", function(){
+    document.getElementById("importFile").click();
+  });
+  document.getElementById("importFile").addEventListener("change", function(){
+    var file = this.files[0];
+    if(!file) return;
+    var r = new FileReader();
+    r.onload = function(){
+      try{
+        var data = JSON.parse(r.result);
+        if(data.words) state.words = data.words;
+        if(data.mastery) state.mastery = data.mastery;
+        if(data.stats) state.stats = data.stats;
+        if(data.daily) state.daily = data.daily;
+        if(data.goal) state.goal = data.goal;
+        if(data.settings) state.settings = data.settings;
+        save();
+        renderLibrary();
+      }catch(e){ alert("That file could not be read as a library export."); }
+    };
+    r.readAsText(file);
+  });
+
+  // ---------------- Import from an arbitrary HTML file ----------------
+  document.getElementById("importHtmlBtn").addEventListener("click", function(){
+    document.getElementById("importHtmlFile").click();
+  });
+  document.getElementById("importHtmlFile").addEventListener("change", function(){
+    var file = this.files[0];
+    var status = document.getElementById("importHtmlStatus");
+    this.value = "";
+    if(!file) return;
+    status.textContent = "Reading…";
+    var r = new FileReader();
+    r.onload = function(){
+      try{
+        importFromHtmlFile(r.result);
+      }catch(e){
+        console.warn("HTML import failed:", e);
+        status.textContent = "Could not read that file.";
+      }
+    };
+    r.onerror = function(){ status.textContent = "Could not read that file."; };
+    r.readAsText(file);
+  });
+
+  // If the uploaded .html file is itself a Steno Drill file with a library
+  // baked in (made via "Download shareable copy" below), its words/images/
+  // audio live inside a `var EMBEDDED_STATE = {...};` assignment in the
+  // script, not as visible text/images in the page body. Pull that out
+  // directly rather than trying to scrape it as plain HTML. Returns the
+  // parsed {words, settings} object, or null if this isn't that kind of file.
+  function extractEmbeddedState(htmlText){
+    var marker = "var EMBEDDED_STATE = ";
+    var idx = htmlText.indexOf(marker);
+    if(idx === -1) return null;
+    var start = idx + marker.length;
+    if(htmlText.charAt(start) !== "{") return null; // "null" (master copy) or malformed
+    // Scan for the matching closing brace, respecting JSON string literals
+    // (which may contain escaped characters) so an embedded stroke image's
+    // data URI or a word's text never confuses the brace count.
+    var depth = 0, inStr = false, esc = false;
+    for(var i = start; i < htmlText.length; i++){
+      var c = htmlText.charAt(i);
+      if(inStr){
+        if(esc) esc = false;
+        else if(c === "\\") esc = true;
+        else if(c === '"') inStr = false;
+        continue;
+      }
+      if(c === '"'){ inStr = true; continue; }
+      if(c === "{") depth++;
+      else if(c === "}"){
+        depth--;
+        if(depth === 0){
+          try{ return JSON.parse(htmlText.slice(start, i + 1)); }
+          catch(e){ return null; }
+        }
+      }
+    }
+    return null;
+  }
+
+  function importFromHtmlFile(htmlText){
+    var status = document.getElementById("importHtmlStatus");
+
+    // Prefer the embedded library, when present, over generic text/image
+    // scraping — it's the actual word/image/audio data rather than a guess
+    // at pairing visible paragraphs with visible images in order.
+    var embedded = extractEmbeddedState(htmlText);
+    if(embedded && embedded.words && embedded.words.length){
+      var addedWords = 0, addedImages = 0, addedAudio = 0;
+      embedded.words.forEach(function(w){
+        var text = (w && w.text ? String(w.text) : "").trim();
+        if(!text) return;
+        state.words.push({
+          id: uid(),
+          text: text,
+          image: (w && w.image) || null,
+          audio: (w && w.audio) || null
+        });
+        addedWords++;
+        if(w && w.image) addedImages++;
+        if(w && w.audio) addedAudio++;
+      });
+      if(addedWords > 0){
+        save();
+        renderLibrary();
+        status.textContent = "Imported " + addedWords + " word(s) from that Steno Drill file" +
+          (addedImages ? ", " + addedImages + " with images" : "") +
+          (addedAudio ? ", " + addedAudio + " with audio" : "") + ".";
+        return;
+      }
+      // Embedded state existed but had no usable words — fall through to
+      // the generic scrape below as a last resort.
+    }
+
+    var doc = new DOMParser().parseFromString(htmlText, "text/html");
+
+    // Pull block-level text out in document order, one word/line per block.
+    var blockSel = "p, li, h1, h2, h3, h4, h5, h6, td, th, blockquote, figcaption, dd, dt";
+    var lines = [];
+    doc.body.querySelectorAll(blockSel).forEach(function(el){
+      // Skip blocks that are only wrapping an image with no real text.
+      var t = (el.textContent || "").replace(/\s+/g, " ").trim();
+      if(t) lines.push(t);
+    });
+    // Fallback for files with no recognizable block tags — split on lines.
+    if(lines.length === 0){
+      (doc.body.textContent || "").split("\n").forEach(function(l){
+        var t = l.trim();
+        if(t) lines.push(t);
+      });
+    }
+
+    // Pull every image's src (data: URIs come through intact; plain
+    // http(s) URLs are kept as-is and will load if the browser can reach
+    // them, same as any other <img src>).
+    var imgs = [];
+    doc.body.querySelectorAll("img").forEach(function(img){
+      var src = img.getAttribute("src");
+      if(src) imgs.push(src);
+    });
+
+    if(lines.length === 0){
+      status.textContent = "No text found in that file.";
+      return;
+    }
+
+    lines.forEach(function(text, i){
+      state.words.push({ id: uid(), text: text, image: imgs[i] || null, audio: null });
+    });
+    save();
+    renderLibrary();
+    status.textContent = "Imported " + lines.length + " word(s)" +
+      (imgs.length ? " and " + Math.min(imgs.length, lines.length) + " image(s)" : "") + ".";
+  }
+
+  document.getElementById("showWordsBtn").addEventListener("click", function(){
+    var box = document.getElementById("wordsAsText");
+    var copyBtn = document.getElementById("copyWordsBtn");
+    var showing = box.style.display !== "none";
+    if(showing){
+      box.style.display = "none";
+      copyBtn.style.display = "none";
+      this.textContent = "Show all words as text";
+    } else {
+      box.value = state.words.map(function(w){ return w.text; }).join("\n\n");
+      box.style.display = "block";
+      copyBtn.style.display = "inline-block";
+      this.textContent = "Hide word list";
+      box.focus();
+      box.select();
+    }
+  });
+
+  document.getElementById("copyWordsBtn").addEventListener("click", function(){
+    var box = document.getElementById("wordsAsText");
+    var statusEl = document.getElementById("copyWordsStatus");
+    box.focus();
+    box.select();
+    function ok(){ statusEl.textContent = "Copied."; setTimeout(function(){ statusEl.textContent = ""; }, 2000); }
+    function fail(){ statusEl.textContent = "Couldn't copy automatically — text is selected, use Ctrl+C / Cmd+C."; }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(box.value).then(ok).catch(function(){
+        try{ document.execCommand("copy") ? ok() : fail(); }catch(e){ fail(); }
+      });
+    } else {
+      try{ document.execCommand("copy") ? ok() : fail(); }catch(e){ fail(); }
+    }
+  });
+
+  document.getElementById("downloadSharedBtn").addEventListener("click", function(){
+    var statusEl = document.getElementById("downloadSharedStatus");
+    if(state.words.length === 0){
+      statusEl.textContent = "Add some words first.";
+      return;
+    }
+    try{
+      var embed = { words: state.words, settings: state.settings };
+      var embedJson = JSON.stringify(embed).replace(/</g, "\\u003c");
+      var instanceId = uid();
+      var html = "<!DOCTYPE html>\n" + PRISTINE_HTML;
+
+      var stateMarker = "var EMBEDDED_STATE = null;";
+      var idMarker = "var FILE_INSTANCE_ID = null;";
+      if(html.indexOf(stateMarker) === -1 || html.indexOf(idMarker) === -1){
+        statusEl.textContent = "Could not build the copy — please try again.";
+        return;
+      }
+      html = html.replace(stateMarker, "var EMBEDDED_STATE = " + embedJson + ";");
+      html = html.replace(idMarker, "var FILE_INSTANCE_ID = " + JSON.stringify(instanceId) + ";");
+
+      var blob = new Blob([html], {type:"text/html"});
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "steno-drill-shared.html";
+      a.click();
+      statusEl.textContent = "Downloaded — share this new file.";
+    }catch(e){
+      console.warn("Could not build shareable copy:", e);
+      statusEl.textContent = "Something went wrong building the copy.";
+    }
+  });
+
+  document.getElementById("clearLibBtn").addEventListener("click", function(){
+    if(!confirm("Remove all words and images? Your progress and statistics stay.")) return;
+    state.words = [];
+    save();
+    renderLibrary();
+    renderTrainer();
+  });
+
+  // ---------------- Trainer logic ----------------
+  var revealTimer = null, missTimer = null;
+  var timerEndsAt = null, timerDurationMs = null, timerKind = null; // 'reveal' | 'miss'
+  var pausedRemainingMs = null;
+  var isPaused = false;
+
+  // ---- Focus mode pace stopwatch ----
+  var paceStartAt = null;      // Date.now() when the current round's stopwatch started
+  var paceCardsAtStart = 0;    // knew+missed count at that moment (usually 0, a fresh round)
+  var pacePausedAt = null;     // Date.now() when paused, so paused time doesn't count
+  var paceIntervalHandle = null;
+
+  // ---------------- Hold-to-reveal image (word -> stroke mode) ----------------
+  // Tracks the reveal progress (0-100) of the image for the current item.
+  // Holding the button advances it at a rate set by state.settings.holdRevealSec
+  // (seconds of continuous holding needed to go from 0 to 100). Releasing
+  // freezes it in place; pressing again resumes from there.
+  var holdReveal = { itemId: null, pct: 0, holding: false, rafId: null, startTs: null, startPct: 0, autoTimer: null };
+
+  function stopHoldReveal(){
+    holdReveal.holding = false;
+    if(holdReveal.rafId){ cancelAnimationFrame(holdReveal.rafId); holdReveal.rafId = null; }
+    if(holdReveal.autoTimer){ clearTimeout(holdReveal.autoTimer); holdReveal.autoTimer = null; }
+  }
+
+  function applyClipPct(img, pct){
+    var p = Math.max(0, Math.min(100, pct));
+    var clip = "inset(0 " + (100 - p) + "% 0 0)";
+    img.style.clipPath = clip;
+    img.style.webkitClipPath = clip;
+  }
+
+  // Builds the image (clipped to current progress) plus its hold-to-reveal /
+  // Next button, for the word -> stroke reveal stage. Returns {wrap, btn}.
+  function buildHoldReveal(itemId, imgSrc){
+    var wrap = document.createElement("div");
+    wrap.className = "reveal-wrap";
+    var img = document.createElement("img");
+    img.src = imgSrc;
+    wrap.appendChild(img);
+
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "btn secondary";
+    btn.id = "holdRevealBtn";
+
+    function onDown(e){
+      if(e.cancelable) e.preventDefault();
+      beginHold();
+    }
+    function beginHold(){
+      if(holdReveal.itemId !== itemId || holdReveal.pct >= 100 || holdReveal.holding) return;
+      holdReveal.holding = true;
+      holdReveal.startTs = performance.now();
+      holdReveal.startPct = holdReveal.pct;
+      if(holdReveal.rafId) cancelAnimationFrame(holdReveal.rafId);
+      holdReveal.rafId = requestAnimationFrame(step);
+    }
+    function onUp(){
+      if(!holdReveal.holding) return;
+      holdReveal.holding = false;
+      if(holdReveal.rafId){ cancelAnimationFrame(holdReveal.rafId); holdReveal.rafId = null; }
+    }
+    function step(now){
+      if(!holdReveal.holding) return;
+      var durationSec = Math.max(0.2, parseFloat(state.settings.holdRevealSec) || 2);
+      var elapsed = now - holdReveal.startTs;
+      var pct = Math.min(100, holdReveal.startPct + (elapsed / (durationSec * 1000)) * 100);
+      holdReveal.pct = pct;
+      applyClipPct(img, pct);
+      if(pct >= 100){
+        holdReveal.holding = false;
+        holdReveal.rafId = null;
+        becomeNextButton();
+        return;
+      }
+      holdReveal.rafId = requestAnimationFrame(step);
+    }
+    function handleNextClick(){ skipNext(); }
+    function becomeHoldButton(){
+      btn.textContent = "Hold to reveal";
+      btn.removeEventListener("click", handleNextClick);
+      btn.addEventListener("mousedown", onDown);
+      btn.addEventListener("touchstart", onDown, {passive:false});
+      btn.addEventListener("mouseup", onUp);
+      btn.addEventListener("mouseleave", onUp);
+      btn.addEventListener("touchend", onUp);
+      btn.addEventListener("touchcancel", onUp);
+    }
+    function becomeNextButton(){
+      btn.textContent = "Next";
+      btn.removeEventListener("mousedown", onDown);
+      btn.removeEventListener("touchstart", onDown);
+      btn.removeEventListener("mouseup", onUp);
+      btn.removeEventListener("mouseleave", onUp);
+      btn.removeEventListener("touchend", onUp);
+      btn.removeEventListener("touchcancel", onUp);
+      btn.addEventListener("click", handleNextClick);
+      btn.disabled = state.session.queue.length < 2;
+    }
+
+    applyClipPct(img, holdReveal.pct);
+    if(holdReveal.pct >= 100){
+      becomeNextButton();
+    } else {
+      becomeHoldButton();
+    }
+
+    return { wrap: wrap, btn: btn, autoStart: beginHold };
+  }
+
+  function wordById(id){
+    for(var i=0;i<state.words.length;i++){ if(state.words[i].id === id) return state.words[i]; }
+    return null;
+  }
+  function parseItemId(itemId){
+    var parts = itemId.split("::");
+    return { wordId: parts[0], dir: parts[1] };
+  }
+  function shuffle(arr){
+    for(var i=arr.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var t = arr[i]; arr[i]=arr[j]; arr[j]=t;
+    }
+    return arr;
+  }
+
+  function allItemsForMode(mode){
+    var items = [];
+    if(mode === "weak") return weakItems();
+    var isS2W = (mode === "s2w" || mode === "s2w-shuffled");
+    var isW2S = (mode === "w2s" || mode === "w2s-shuffled");
+    state.words.forEach(function(w){
+      var s2w = w.id + "::s2w", w2s = w.id + "::w2s";
+      if(isS2W){ if(!state.mastery[s2w]) items.push(s2w); }
+      else if(isW2S){ if(!state.mastery[w2s]) items.push(w2s); }
+      else { // combined
+        if(!state.mastery[s2w]) items.push(s2w);
+        if(!state.mastery[w2s]) items.push(w2s);
+      }
+    });
+    return items;
+  }
+
+  function startMode(mode){
+    // A fresh session must never inherit a "paused" flag (or audio) from the
+    // previous one — the mode picker in Focus mode makes this easy to hit.
+    isPaused = false;
+    stopAudio();
+    shownItem = null;
+    var items = allItemsForMode(mode);
+    if(items.length === 0){
+      state.session = { mode: mode, queue: [], skipStack: [], history: [], knew:0, missed:0, revealed:false, finished:true, lastJudge:null };
+      save(); renderTrainer();
+      return;
+    }
+    var lim = parseInt(state.settings.roundLimit, 10) || 0;
+    if(mode === "weak"){ if(lim > 0) items = items.slice(0, lim); shuffle(items); }
+    else {
+      if(mode === "combined" || mode === "s2w-shuffled" || mode === "w2s-shuffled") shuffle(items);
+      if(lim > 0) items = items.slice(0, lim);
+    }
+    state.session = {
+      mode: mode,
+      queue: items,
+      skipStack: [],
+      history: [],
+      knew: 0,
+      missed: 0,
+      revealed: false,
+      finished: false,
+      lastJudge: null,
+      missedIds: []
+    };
+    startPaceStopwatch();
+    save();
+    renderTrainer();
+  }
+
+  document.getElementById("modeS2W").addEventListener("click", function(){ startMode("s2w"); });
+  document.getElementById("modeS2Wshuf").addEventListener("click", function(){ startMode("s2w-shuffled"); });
+  document.getElementById("modeW2S").addEventListener("click", function(){ startMode("w2s"); });
+  document.getElementById("modeW2Sshuf").addEventListener("click", function(){ startMode("w2s-shuffled"); });
+  document.getElementById("modeCombined").addEventListener("click", function(){ startMode("combined"); });
+  document.getElementById("modeWeak").addEventListener("click", function(){ startMode("weak"); });
+
+  // ---------------- Reveal-button style ----------------
+  function setRevealStyle(style){
+    state.settings.revealStyle = style;
+    save();
+    syncStyleButtons();
+  }
+  function syncStyleButtons(){
+    var style = state.settings.revealStyle || "default";
+    document.querySelectorAll(".style-btn").forEach(function(b){
+      b.classList.toggle("active", b.dataset.style === style);
+    });
+  }
+  document.getElementById("styleDefault").addEventListener("click", function(){ setRevealStyle("default"); });
+  document.getElementById("styleKnew").addEventListener("click", function(){ setRevealStyle("knewit"); });
+  document.getElementById("styleNext").addEventListener("click", function(){ setRevealStyle("next"); });
+
+  // ---------------- Tap-zone position (landscape phone) ----------------
+  function setTapZonePosition(pos){
+    state.settings.tapZonePosition = pos;
+    save();
+    syncTapZoneButtons();
+    renderTrainer();
+  }
+  function syncTapZoneButtons(){
+    var pos = state.settings.tapZonePosition || "none";
+    document.querySelectorAll(".tapzone-btn").forEach(function(b){
+      b.classList.toggle("active", b.dataset.tapzone === pos);
+    });
+  }
+  document.getElementById("tapzoneNone").addEventListener("click", function(){ setTapZonePosition("none"); });
+  document.getElementById("tapzoneLeft").addEventListener("click", function(){ setTapZonePosition("left"); });
+  document.getElementById("tapzoneRight").addEventListener("click", function(){ setTapZonePosition("right"); });
+
+  document.getElementById("reshuffleBtn").addEventListener("click", function(){
+    if(!state.session || state.session.queue.length < 2) return;
+    shuffle(state.session.queue);
+    save();
+    renderTrainer();
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", function(){
+    if(!confirm("Clear all mastery progress and the current session? Your word library stays.")) return;
+    state.mastery = {};
+    state.session = null;
+    save();
+    renderTrainer();
+  });
+
+  document.getElementById("applySettingsBtn").addEventListener("click", function(){
+    var rs = parseInt(document.getElementById("revealSec").value, 10);
+    var ms = parseInt(document.getElementById("missSec").value, 10);
+    var hrs = parseFloat(document.getElementById("holdRevealSec").value);
+    var ahs = parseFloat(document.getElementById("autoHoldSec").value);
+    state.settings.revealSec = isNaN(rs) ? state.settings.revealSec : rs;
+    state.settings.missSec = isNaN(ms) ? state.settings.missSec : ms;
+    state.settings.holdRevealSec = (isNaN(hrs) || hrs <= 0) ? state.settings.holdRevealSec : hrs;
+    state.settings.revealMode = document.getElementById("revealModeSel").value === "instant" ? "instant" : "hold";
+    state.settings.autoHoldEnabled = document.getElementById("autoHoldEnabled").checked;
+    state.settings.autoHoldSec = (isNaN(ahs) || ahs < 0) ? state.settings.autoHoldSec : ahs;
+    save();
+    // Settings like auto-hold only take effect the next time a card is
+    // rendered. Without this, ticking the checkbox (or changing the delay)
+    // while a card is already sitting on screen does nothing until the user
+    // moves to another card. Re-render the current card now so it applies
+    // immediately, without resetting any hold-reveal progress already made.
+    if(state.session){
+      stopHoldReveal();
+      renderCard();
+    }
+  });
+
+  // The auto-hold checkbox (and its seconds field) apply immediately on
+  // their own, rather than waiting for the user to notice and click the
+  // separate "Apply" button — that disconnect was making it look broken.
+  function applyAutoHoldLive(){
+    state.settings.autoHoldEnabled = document.getElementById("autoHoldEnabled").checked;
+    var ahs = parseFloat(document.getElementById("autoHoldSec").value);
+    state.settings.autoHoldSec = (isNaN(ahs) || ahs < 0) ? state.settings.autoHoldSec : ahs;
+    save();
+    if(state.session){
+      stopHoldReveal();
+      renderCard();
+    }
+  }
+  document.getElementById("autoHoldEnabled").addEventListener("change", applyAutoHoldLive);
+  document.getElementById("autoHoldSec").addEventListener("input", applyAutoHoldLive);
+
+  function clearTimers(){
+    if(revealTimer){ clearInterval(revealTimer); revealTimer = null; }
+    if(missTimer){ clearInterval(missTimer); missTimer = null; }
+    timerEndsAt = null; timerDurationMs = null; timerKind = null; pausedRemainingMs = null;
+    stopHoldReveal();
+  }
+
+  function startCountdown(kind, seconds, onFire){
+    clearTimers();
+    if(seconds <= 0){ onFire(); return; }
+    timerKind = kind;
+    timerDurationMs = seconds*1000;
+    timerEndsAt = Date.now() + timerDurationMs;
+    var intervalId = setInterval(function(){
+      if(isPaused) return;
+      var remaining = timerEndsAt - Date.now();
+      if(remaining <= 0){
+        clearInterval(intervalId);
+        if(kind === "reveal") revealTimer = null; else missTimer = null;
+        onFire();
+      } else {
+        updateCountdownDisplay(remaining);
+      }
+    }, 250);
+    if(kind === "reveal") revealTimer = intervalId; else missTimer = intervalId;
+    updateCountdownDisplay(timerDurationMs);
+  }
+
+  function updateCountdownDisplay(remainingMs){
+    var el = document.getElementById("cardCountdown");
+    if(!el) return;
+    var secs = Math.max(0, Math.ceil(remainingMs/1000));
+    if(isPaused){
+      el.textContent = "paused";
+      el.classList.add("paused");
+      return;
+    }
+    el.classList.remove("paused");
+    if(timerKind === "reveal") el.textContent = "auto-reveal in " + secs + "s";
+    else if(timerKind === "miss") el.textContent = "auto-marks missed in " + secs + "s";
+    else el.textContent = "";
+  }
+
+  // Keeps the Focus-mode pause button (top left) in step with isPaused.
+  function syncFmPause(){
+    var b = document.getElementById("fmPauseBtn");
+    if(!b) return;
+    b.classList.toggle("paused", !!isPaused);
+    b.textContent = isPaused ? "\u25B6 Resume" : "\u23F8 Pause";
+    b.setAttribute("aria-label", isPaused ? "Resume" : "Pause");
+  }
+
+  // Focus mode's top-right "N today" badge — knew + missed, Focus mode
+  // sessions only (recordResult() only runs while Focus mode is on).
+  function syncFmTodayCount(){
+    var b = document.getElementById("fmTodayCount");
+    if(!b) return;
+    var t = state.daily[dayKey(new Date())] || { cards: 0 };
+    b.textContent = t.cards + " today";
+  }
+
+  function togglePause(){
+    if(!timerKind) return;
+    isPaused = !isPaused;
+    if(isPaused){
+      pausedRemainingMs = timerEndsAt - Date.now();
+    } else {
+      timerEndsAt = Date.now() + Math.max(0,pausedRemainingMs);
+    }
+    var btn = document.getElementById("pauseBtn");
+    if(btn) btn.textContent = isPaused ? "Resume" : "Pause";
+    syncFmPause();
+    updateCountdownDisplay(isPaused ? pausedRemainingMs : (timerEndsAt - Date.now()));
+    pausePaceStopwatch(isPaused);
+  }
+
+  // ---- Focus mode pace tracker ----
+  // Two interchangeable clocks feed the same badge:
+  //  - "stopwatch" (original behaviour): counts up from the moment the
+  //    current round started. A round is "on pace" as long as knew+missed
+  //    keeps up with floor(elapsed seconds / paceSec).
+  //  - "realtime": ignores the round entirely and instead compares the
+  //    day's total card count (state.daily[today].cards, already tracked
+  //    for the Progress tab) against how many cards should be done by now
+  //    given a fixed wall-clock window (paceStart–paceEnd) and the same
+  //    "seconds per card" target. Falling behind turns the badge red and
+  //    shows how many cards are needed to catch up; being ahead shows how
+  //    many extra cards have been finished. Pausing the card timer does
+  //    NOT pause this clock — real time keeps moving either way.
+  function paceIntervalSec(){
+    return Math.max(1, parseInt(state.settings.paceSec, 10) || 30);
+  }
+  function sessionDoneCount(){
+    return state.session ? (state.session.knew + state.session.missed) : 0;
+  }
+  function isRealtimePace(){
+    return state.settings.paceMode === "realtime";
+  }
+  function todayCardsDone(){
+    return (state.daily[dayKey(new Date())] || {}).cards || 0;
+  }
+  // "HH:MM" -> minutes since midnight, or null if unparsable.
+  function parseClockStr(s){
+    var m = /^(\d{1,2}):(\d{2})$/.exec(s || "");
+    if(!m) return null;
+    var h = parseInt(m[1], 10), mi = parseInt(m[2], 10);
+    if(h > 23 || mi > 59) return null;
+    return h * 60 + mi;
+  }
+  function paceWindowMinutes(){
+    var start = parseClockStr(state.settings.paceStart);
+    var end = parseClockStr(state.settings.paceEnd);
+    if(start == null) start = 8 * 60;
+    if(end == null) end = 20 * 60;
+    if(end <= start) end = start + 60; // guard against a zero/negative window
+    return { start: start, end: end };
+  }
+  function formatClock(d){
+    try{
+      return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    }catch(e){
+      var h = d.getHours(), mi = d.getMinutes(), ap = h >= 12 ? "PM" : "AM";
+      h = h % 12; if(h === 0) h = 12;
+      return h + ":" + (mi < 10 ? "0" : "") + mi + " " + ap;
+    }
+  }
+  function startPaceStopwatch(){
+    paceStartAt = Date.now();
+    paceCardsAtStart = sessionDoneCount();
+    pacePausedAt = null;
+    if(paceIntervalHandle) clearInterval(paceIntervalHandle);
+    paceIntervalHandle = setInterval(updatePaceDisplay, 250);
+    updatePaceDisplay();
+  }
+  function stopPaceStopwatch(){
+    if(paceIntervalHandle){ clearInterval(paceIntervalHandle); paceIntervalHandle = null; }
+    paceStartAt = null;
+    pacePausedAt = null;
+  }
+  // Pausing/resuming the card timer (top-left Pause button) also freezes
+  // the stopwatch mode's clock, so paused time never counts against pace.
+  // The realtime clock is deliberately left alone — see note above.
+  function pausePaceStopwatch(paused){
+    if(isRealtimePace()) return;
+    if(!paceStartAt) return;
+    if(paused){
+      pacePausedAt = Date.now();
+    } else if(pacePausedAt){
+      paceStartAt += (Date.now() - pacePausedAt);
+      pacePausedAt = null;
+    }
+  }
+  function applyPaceBadge(box, timeText, behind, neutralText){
+    box.querySelector(".fp-time").textContent = timeText;
+    var statusEl = box.querySelector(".fp-status");
+    if(neutralText != null){
+      box.classList.remove("pace-behind");
+      statusEl.textContent = neutralText;
+      return;
+    }
+    if(behind > 0){
+      box.classList.add("pace-behind");
+      statusEl.textContent = behind + (behind === 1 ? " card to go" : " cards to go");
+    } else if(behind < 0){
+      box.classList.remove("pace-behind");
+      var extra = -behind;
+      statusEl.textContent = "+" + extra + (extra === 1 ? " extra card" : " extra cards");
+    } else {
+      box.classList.remove("pace-behind");
+      statusEl.textContent = "on pace";
+    }
+  }
+  function updateRealtimePaceDisplay(box){
+    var now = new Date();
+    var win = paceWindowMinutes();
+    var nowMin = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+    if(nowMin < win.start){
+      applyPaceBadge(box, formatClock(now), null, "starts " + formatClock(new Date(now.getFullYear(), now.getMonth(), now.getDate(), Math.floor(win.start / 60), win.start % 60)));
+      return;
+    }
+    var elapsedMin = Math.min(nowMin, win.end) - win.start;
+    var expected = Math.floor((elapsedMin * 60) / paceIntervalSec());
+    var done = todayCardsDone();
+    var behind = expected - done;
+    var neutral = (nowMin >= win.end && behind <= 0) ? "day done, on pace" : null;
+    applyPaceBadge(box, formatClock(now), behind, neutral);
+  }
+  function updateStopwatchPaceDisplay(box){
+    if(!paceStartAt){
+      applyPaceBadge(box, "0:00", null, "on pace");
+      return;
+    }
+    var elapsedMs = (pacePausedAt || Date.now()) - paceStartAt;
+    var elapsedSec = Math.max(0, Math.floor(elapsedMs / 1000));
+    var mm = Math.floor(elapsedSec / 60), ss = elapsedSec % 60;
+    var timeText = mm + ":" + (ss < 10 ? "0" : "") + ss;
+    var interval = paceIntervalSec();
+    var expected = Math.floor(elapsedSec / interval);
+    var done = sessionDoneCount() - paceCardsAtStart;
+    applyPaceBadge(box, timeText, expected - done, null);
+  }
+  function updatePaceDisplay(){
+    var box = document.getElementById("fmPace");
+    if(!box) return;
+    if(isRealtimePace()) updateRealtimePaceDisplay(box);
+    else updateStopwatchPaceDisplay(box);
+  }
+
+  function currentItemId(){
+    if(!state.session || state.session.queue.length === 0) return null;
+    return state.session.queue[0];
+  }
+
+  function applyRevealButtonStyle(){
+    var revealBtn = document.getElementById("revealBtnEl");
+    if(!revealBtn || !state.session || !state.session.revealed) return;
+    // detach the "reveal" click behavior — it's about to become something else (or just disable)
+    revealBtn.removeEventListener("click", reveal);
+    var style = state.settings.revealStyle || "default";
+    if(style === "knewit"){
+      revealBtn.textContent = "Knew it";
+      revealBtn.disabled = false;
+      revealBtn.addEventListener("click", function(){ judge("knew"); });
+    } else if(style === "next"){
+      revealBtn.textContent = "Next";
+      revealBtn.disabled = state.session.queue.length < 2;
+      revealBtn.addEventListener("click", skipNext);
+    } else {
+      revealBtn.disabled = true;
+    }
+  }
+
+  function reveal(){
+    if(!state.session) return;
+    lastRevealMs = shownAt ? Math.min(60000, Date.now() - shownAt) : null;
+    state.session.revealed = true;
+    clearTimers();
+    isPaused = false;
+    var btn = document.getElementById("pauseBtn");
+    if(btn) btn.textContent = "Pause";
+    syncFmPause();
+    save();
+
+    // Set up the miss-countdown BEFORE renderCard(), so its clearTimers()
+    // call doesn't wipe out an auto-hold timer that renderCard() schedules
+    // for a just-revealed image.
+    startCountdown("miss", state.settings.missSec, function(){
+      judge("missed", true);
+    });
+
+    renderCard();
+    var knewBtn = document.getElementById("knewBtn");
+    var missedBtn = document.getElementById("missedBtn");
+    if(knewBtn) knewBtn.disabled = false;
+    if(missedBtn) missedBtn.disabled = false;
+
+    applyRevealButtonStyle();
+  }
+
+  function judge(result, fromTimer){
+    if(!state.session) return;
+    var itemId = currentItemId();
+    if(!itemId) return;
+    clearTimers();
+    stopAudio();
+    isPaused = false;
+    var wasMastered = !!state.mastery[itemId];
+    // Progress/statistics only ever come from Focus mode sessions — a card
+    // judged outside Focus mode still moves the round along but leaves no
+    // trace in stats, streaks, or mastery.
+    var tracked = document.body.classList.contains("focus-mode");
+    if(tracked){
+      recordResult(itemId, result);
+      if(result === "knew") state.mastery[itemId] = true;
+    }
+    if(result === "knew"){
+      state.session.knew++;
+    } else {
+      state.session.missed++;
+    }
+    state.session.queue.shift();
+    state.session.revealed = false;
+    state.session.lastJudge = { itemId: itemId, result: result, wasMastered: wasMastered, tracked: tracked };
+    histPush({ type: "judge", itemId: itemId, result: result, wasMastered: wasMastered, tracked: tracked });
+    save();
+    if(state.session.queue.length === 0){
+      state.session.finished = true;
+      save();
+    }
+    renderTrainer();
+  }
+
+  function undoJudge(){
+    if(!state.session || !state.session.lastJudge) return;
+    var rec = state.session.lastJudge;
+    if(rec.tracked) unrecord(rec.itemId, rec.result);
+    clearTimers();
+    stopAudio();
+    isPaused = false;
+    if(rec.result === "knew"){
+      state.session.knew = Math.max(0, state.session.knew - 1);
+      if(rec.tracked && !rec.wasMastered) delete state.mastery[rec.itemId];
+    } else {
+      state.session.missed = Math.max(0, state.session.missed - 1);
+    }
+    state.session.queue.unshift(rec.itemId);
+    state.session.revealed = true;
+    state.session.finished = false;
+    state.session.lastJudge = null;
+    histRemoveLast("judge", rec.itemId);
+    save();
+    renderTrainer();
+  }
+
+  function skipNext(){
+    if(!state.session || state.session.queue.length < 2) return;
+    clearTimers();
+    stopAudio();
+    isPaused = false;
+    var itemId = state.session.queue.shift();
+    state.session.queue.push(itemId);
+    state.session.skipStack.push(itemId);
+    histPush({ type: "skip", itemId: itemId });
+    state.session.revealed = false;
+    save();
+    renderTrainer();
+  }
+
+  function goPrevious(){
+    if(!state.session || state.session.skipStack.length === 0) return;
+    clearTimers();
+    stopAudio();
+    isPaused = false;
+    var itemId = state.session.skipStack.pop();
+    var idx = state.session.queue.lastIndexOf(itemId);
+    if(idx !== -1) state.session.queue.splice(idx,1);
+    state.session.queue.unshift(itemId);
+    histRemoveLast("skip", itemId);
+    state.session.revealed = false;
+    save();
+    renderTrainer();
+  }
+
+  // ---------------- Action history (drives Focus mode's Previous) ----------------
+  // Every "Knew it" / "Missed it" (including auto-miss) and every skip is
+  // logged, so Previous can step back through ALL of them — not just skips.
+  // A card that was missed (or auto-missed) comes straight back.
+  function histPush(rec){
+    if(!state.session) return;
+    if(!state.session.history) state.session.history = [];
+    state.session.history.push(rec);
+    if(state.session.history.length > 500) state.session.history.shift();
+  }
+  function histRemoveLast(type, itemId){
+    var h = state.session && state.session.history;
+    if(!h) return;
+    for(var i = h.length - 1; i >= 0; i--){
+      if(h[i].type === type && h[i].itemId === itemId){ h.splice(i,1); return; }
+    }
+  }
+  function canGoBackAny(){
+    return !!(state.session && state.session.history && state.session.history.length);
+  }
+  function goBackAny(){
+    if(!canGoBackAny()) return;
+    var rec = state.session.history.pop();
+    clearTimers();
+    stopAudio();
+    isPaused = false;
+    var q = state.session.queue;
+    if(rec.type === "judge"){
+      if(rec.tracked) unrecord(rec.itemId, rec.result);
+      if(rec.result === "knew"){
+        state.session.knew = Math.max(0, state.session.knew - 1);
+        if(rec.tracked && !rec.wasMastered) delete state.mastery[rec.itemId];
+      } else {
+        state.session.missed = Math.max(0, state.session.missed - 1);
+      }
+      q.unshift(rec.itemId);
+      state.session.finished = false;
+      state.session.lastJudge = null;
+    } else {
+      var idx = q.lastIndexOf(rec.itemId);
+      if(idx !== -1) q.splice(idx,1);
+      q.unshift(rec.itemId);
+      var si = state.session.skipStack.lastIndexOf(rec.itemId);
+      if(si !== -1) state.session.skipStack.splice(si,1);
+    }
+    state.session.revealed = false;
+    save();
+    renderTrainer();
+  }
+
+  document.getElementById("fmPrevBtn").addEventListener("click", goBackAny);
+  document.getElementById("fmNextBtn").addEventListener("click", skipNext);
+  document.getElementById("fmPauseBtn").addEventListener("click", function(){
+    togglePause();
+    this.blur();
+  });
+
+  function continueAfterSummary(){
+    var mode = state.session.mode;
+    startMode(mode);
+  }
+
+  // Silently starts a fresh round containing only the cards missed in the
+  // round that just finished — no summary screen, no counts shown.
+  function continueWithMissed(ids){
+    isPaused = false; stopAudio(); shownItem = null;
+    var mode = state.session.mode;
+    var items = ids.slice(); shuffle(items);
+    state.session = { mode: mode, queue: items, skipStack: [], history: [], knew:0, missed:0, revealed:false, finished:false, lastJudge:null, missedIds: [] };
+    startPaceStopwatch();
+    save();
+    renderTrainer();
+  }
+
+  // ---------------- Rendering ----------------
+  function renderTrainer(){
+    syncFmPause();
+    syncFmTodayCount();
+    document.getElementById("revealSec").value = state.settings.revealSec;
+    document.getElementById("missSec").value = state.settings.missSec;
+    document.getElementById("holdRevealSec").value = state.settings.holdRevealSec;
+    document.getElementById("revealModeSel").value = state.settings.revealMode || "hold";
+    document.getElementById("autoHoldEnabled").checked = !!state.settings.autoHoldEnabled;
+    document.getElementById("autoHoldSec").value = state.settings.autoHoldSec;
+    syncExtraSettings();
+    syncWake();
+    var total = state.words.length * 2;
+    var masteredN = Object.keys(state.mastery).length;
+    var todayN = (state.daily[dayKey(new Date())] || {}).cards || 0;
+    document.getElementById("masteredCount").textContent = masteredN + " mastered out of " + total + " items  ·  today: " + todayN + " of " + (state.goal || 20) + " cards";
+
+    var body = document.getElementById("trainerBody");
+    body.innerHTML = "";
+    document.body.classList.remove("fm-has-card");
+
+    if(state.words.length === 0){
+      body.innerHTML = '<div class="idle-note">Your library is empty. Add words and images in the Library tab first.</div>';
+      return;
+    }
+    if(!state.session){
+      body.innerHTML = '<div class="idle-note">Choose a mode above to start a session.</div>';
+      return;
+    }
+    if(state.session.finished){
+      stopPaceStopwatch();
+      var doneN = state.session.knew + state.session.missed;
+      var mids = (state.session.missedIds || []).filter(function(id){ return wordById(parseItemId(id).wordId); });
+      if(mids.length){
+        // Cards were missed this round — carry straight on to another
+        // round with just those cards. No counts shown, no extra tap.
+        continueWithMissed(mids);
+        return;
+      }
+      var box = document.createElement("div");
+      box.className = "summary-box";
+      if(doneN === 0){
+        box.innerHTML = "<h2>Nothing to practise</h2><p>" + (state.session.mode === "weak" ? "No weak spots yet. Cards you miss will show up here." : "Everything in this mode is already mastered. Use Reset progress to start again.") + "</p>";
+      } else {
+        box.innerHTML = "<h2>Round complete</h2><p>Nice work — every card in this round is done.</p>";
+      }
+      var cont = document.createElement("button");
+      cont.className = "btn";
+      cont.textContent = (state.session.mode === "combined") ? "Start next round" : "Start next pass";
+      cont.addEventListener("click", continueAfterSummary);
+      box.appendChild(document.createElement("br"));
+      box.appendChild(cont);
+      body.appendChild(box);
+      return;
+    }
+
+    // Two-column wrapper: all the real controls live in the left column;
+    // the right column is an empty tap target. In portrait this column
+    // just collapses (see CSS) and the layout looks exactly as before. In
+    // landscape on a phone there's too little vertical room to reach
+    // whitespace above/below the card without scrolling, so this gives a
+    // dedicated patch of screen beside the card that's always reachable —
+    // tapping it hits the same "click outside the card" handler as before.
+    var cols = document.createElement("div");
+    cols.className = "trainer-columns pos-" + (state.settings.tapZonePosition || "none");
+    var left = document.createElement("div");
+    left.className = "trainer-left";
+    var tapZone = document.createElement("div");
+    tapZone.className = "trainer-tap-zone";
+    tapZone.textContent = "tap here";
+    cols.appendChild(left);
+    cols.appendChild(tapZone);
+    body.appendChild(cols);
+
+    // Focus mode's side Previous / Next buttons: shown only while a card is on screen
+    document.body.classList.add("fm-has-card");
+    document.getElementById("fmPrevBtn").disabled = !canGoBackAny();
+    document.getElementById("fmNextBtn").disabled = state.session.queue.length < 2;
+
+    // Status line — progress through the current round
+    var doneCount = state.session.knew + state.session.missed;
+    var totalCount = doneCount + state.session.queue.length;
+    var statusLine = document.createElement("div");
+    statusLine.className = "status-line";
+    var posSpan = document.createElement("span");
+    posSpan.textContent = "Card " + (doneCount + 1) + " of " + totalCount;
+    var scoreSpan = document.createElement("span");
+    scoreSpan.textContent = "Knew " + state.session.knew + " · Missed " + state.session.missed;
+    statusLine.appendChild(posSpan);
+    statusLine.appendChild(scoreSpan);
+    left.appendChild(statusLine);
+
+    // Judge row
+    var judgeRow = document.createElement("div");
+    judgeRow.className = "judge-row";
+    var knewBtn = document.createElement("button");
+    knewBtn.id = "knewBtn";
+    knewBtn.textContent = "Knew it";
+    knewBtn.disabled = !state.session.revealed;
+    knewBtn.addEventListener("click", function(){ judge("knew"); });
+    var missedBtn = document.createElement("button");
+    missedBtn.id = "missedBtn";
+    missedBtn.textContent = "Missed it";
+    missedBtn.disabled = !state.session.revealed;
+    missedBtn.addEventListener("click", function(){ judge("missed"); });
+    judgeRow.appendChild(knewBtn);
+    judgeRow.appendChild(missedBtn);
+    left.appendChild(judgeRow);
+
+    // Card
+    var card = document.createElement("div");
+    card.className = "card";
+    card.id = "cardEl";
+    left.appendChild(card);
+
+    // Fixed slot for the hold-to-reveal / Next button (word -> stroke image
+    // reveal). Lives outside the card so its position never shifts based on
+    // the image's size — it always sits in the same place beneath the card.
+    var holdSlot = document.createElement("div");
+    holdSlot.className = "hold-reveal-slot";
+    holdSlot.id = "holdRevealSlot";
+    left.appendChild(holdSlot);
+
+    // Nav row
+    var navRow = document.createElement("div");
+    navRow.className = "nav-row";
+    var undoBtn = document.createElement("button");
+    undoBtn.className = "btn secondary";
+    undoBtn.textContent = "Undo";
+    undoBtn.disabled = !state.session.lastJudge;
+    undoBtn.title = "Undo the last Knew it / Missed it";
+    undoBtn.addEventListener("click", undoJudge);
+    var prevBtn = document.createElement("button");
+    prevBtn.className = "btn secondary";
+    prevBtn.textContent = "Previous";
+    prevBtn.disabled = state.session.skipStack.length === 0;
+    prevBtn.addEventListener("click", goPrevious);
+    var revealBtn = document.createElement("button");
+    revealBtn.className = "btn secondary";
+    revealBtn.id = "revealBtnEl";
+    revealBtn.textContent = "Reveal";
+    revealBtn.disabled = state.session.revealed;
+    revealBtn.addEventListener("click", reveal);
+    var pauseBtn = document.createElement("button");
+    pauseBtn.className = "btn secondary";
+    pauseBtn.id = "pauseBtn";
+    pauseBtn.textContent = "Pause";
+    pauseBtn.addEventListener("click", togglePause);
+    var nextBtn = document.createElement("button");
+    nextBtn.className = "btn secondary";
+    nextBtn.textContent = "Next";
+    nextBtn.disabled = state.session.queue.length < 2;
+    nextBtn.addEventListener("click", skipNext);
+    navRow.appendChild(undoBtn);
+    navRow.appendChild(prevBtn);
+    navRow.appendChild(revealBtn);
+    navRow.appendChild(pauseBtn);
+    navRow.appendChild(nextBtn);
+    left.appendChild(navRow);
+
+    applyRevealButtonStyle();
+
+    // start the reveal countdown if not revealed yet — must happen BEFORE
+    // renderCard() so the miss-countdown's clearTimers() doesn't wipe an
+    // auto-hold timer that renderCard() schedules for a revealed image.
+    if(!state.session.revealed){
+      startCountdown("reveal", state.settings.revealSec, function(){
+        reveal();
+      });
+    } else {
+      startCountdown("miss", state.settings.missSec, function(){
+        judge("missed", true);
+      });
+    }
+
+    renderCard();
+  }
+
+  var lastAudioKey = null;
+  function renderCard(){
+    var card = document.getElementById("cardEl");
+    if(!card || !state.session) return;
+    var itemId = currentItemId();
+    if(!itemId) return;
+    var parsed = parseItemId(itemId);
+    var w = wordById(parsed.wordId);
+    if(!w) return;
+    var isS2W = parsed.dir === "s2w";
+    var revealed = state.session.revealed;
+    if(!revealed && itemId !== shownItem){ shownItem = itemId; shownAt = Date.now(); lastRevealMs = null; }
+
+    // Reset the hold-to-reveal progress whenever we're not in the revealed
+    // state (fresh card, or backed out via undo/previous), and whenever the
+    // item itself has changed, so each card's image always starts hidden.
+    if(!revealed || holdReveal.itemId !== itemId){
+      stopHoldReveal();
+      holdReveal.itemId = itemId;
+      holdReveal.pct = 0;
+    }
+
+    var holdSlotEl = document.getElementById("holdRevealSlot");
+    if(holdSlotEl) holdSlotEl.innerHTML = "";
+
+    // Play audio only once the word's text is actually visible: immediately
+    // for word->stroke (text is the prompt), only after reveal for stroke->word
+    // (text is the answer). Play once per state, not on every re-render.
+    var textVisible = isS2W ? revealed : true;
+    var audioKey = itemId + "::" + (textVisible ? "on" : "off");
+    if(textVisible && w.audio && audioKey !== lastAudioKey){
+      playAudio(w.audio);
+    } else if(textVisible && !w.audio && state.settings.tts && audioKey !== lastAudioKey){
+      speak(w.text);
+    } else if(!textVisible){
+      stopAudio();
+    }
+    lastAudioKey = audioKey;
+
+    card.innerHTML = "";
+
+    var label = document.createElement("div");
+    label.className = "direction-label";
+    label.textContent = isS2W ? "stroke → word" : "word → stroke";
+    card.appendChild(label);
+
+    var cd = document.createElement("div");
+    cd.className = "countdown";
+    cd.id = "cardCountdown";
+    card.appendChild(cd);
+
+    if(w.audio){
+      var ai = document.createElement("div");
+      ai.className = "audio-indicator";
+      ai.textContent = "audio";
+      card.appendChild(ai);
+    }
+    if(textVisible){
+      var sb = el("button", "btn secondary small speak-btn", "🔊");
+      sb.title = "Say the word (S)";
+      sb.addEventListener("click", sayCurrent);
+      card.appendChild(sb);
+    }
+
+    if(isS2W){
+      if(w.image){
+        var img = document.createElement("img");
+        img.src = w.image;
+        card.appendChild(img);
+      } else {
+        var note = document.createElement("div");
+        note.className = "no-image-note";
+        note.textContent = "(no image saved for this word)";
+        card.appendChild(note);
+      }
+      if(revealed){
+        var ans = document.createElement("div");
+        ans.className = "answer-text";
+        ans.textContent = w.text;
+        card.appendChild(ans);
+      }
+    } else {
+      var prompt = document.createElement("div");
+      prompt.className = "prompt-text";
+      prompt.textContent = w.text;
+      card.appendChild(prompt);
+      if(revealed){
+        if(w.image){
+          if((state.settings.revealMode || "hold") === "instant"){
+            var img2 = document.createElement("img");
+            img2.style.marginTop = "16px";
+            img2.src = w.image;
+            card.appendChild(img2);
+          } else {
+            var holdUI = buildHoldReveal(itemId, w.image);
+            holdUI.wrap.style.marginTop = "16px";
+            card.appendChild(holdUI.wrap);
+            if(holdSlotEl) holdSlotEl.appendChild(holdUI.btn);
+            if(state.settings.autoHoldEnabled && holdReveal.pct < 100){
+              var delayMs = Math.max(0, parseFloat(state.settings.autoHoldSec) || 0) * 1000;
+              holdReveal.autoTimer = setTimeout(function(){
+                holdReveal.autoTimer = null;
+                if(holdReveal.itemId === itemId) holdUI.autoStart();
+              }, delayMs);
+            }
+          }
+        } else {
+          var note2 = document.createElement("div");
+          note2.className = "no-image-note";
+          note2.style.marginTop = "12px";
+          note2.textContent = "(no image saved for this word)";
+          card.appendChild(note2);
+        }
+      }
+    }
+  }
+
+  // ---------------- Tap/click anywhere to advance ----------------
+  // Built for phone use, where the small buttons are fiddly to hit:
+  //  - card not revealed yet -> a click anywhere reveals it
+  //  - revealed, click lands inside the card -> left half "Knew it",
+  //    right half moves on as "Missed it"
+  //  - revealed, click lands outside the card -> mirrors whatever the
+  //    Reveal button has turned into (Next / Knew it / nothing, per the
+  //    reveal-button style chosen in settings)
+  // Clicks on real controls (buttons, inputs, links) are left alone so
+  // those keep working exactly as before.
+  document.addEventListener("click", function(e){
+    if(!state.session || state.session.finished) return;
+    var trainerPanel = document.getElementById("panel-trainer");
+    if(!trainerPanel || !trainerPanel.classList.contains("active")) return;
+    if(e.target.closest("button, input, textarea, select, a")) return;
+
+    var cardEl = document.getElementById("cardEl");
+    var insideCard = cardEl && cardEl.contains(e.target);
+
+    if(!state.session.revealed){
+      reveal();
+      return;
+    }
+    if(insideCard){
+      // Revealed card is split down the middle: left half = Knew it,
+      // right half = next card (Missed it).
+      var rect = cardEl.getBoundingClientRect();
+      var mid = rect.left + rect.width / 2;
+      if(e.clientX < mid){
+        judge("knew");
+      } else {
+        judge("missed");
+      }
+      return;
+    }
+    var style = state.settings.revealStyle || "default";
+    if(style === "knewit"){
+      judge("knew");
+    } else if(style === "next"){
+      skipNext();
+    }
+    // "default" style: the Reveal button is inert once revealed, so a
+    // click outside the card does nothing extra here either — use the
+    // Knew it / Missed it buttons for that style.
+  });
+
+  // ---------------- Spacebar shortcut ----------------
+  // Only active in the two new reveal-button styles ("knewit" / "next"),
+  // and only once the card is revealed. Maps space to "Knew it".
+  document.addEventListener("keydown", function(e){
+    if(e.code !== "Space" && e.key !== " ") return;
+    var tag = (document.activeElement && document.activeElement.tagName) || "";
+    if(tag === "INPUT" || tag === "TEXTAREA") return;
+    if(!state.session || !state.session.revealed) return;
+    var style = state.settings.revealStyle || "default";
+    if(style !== "knewit" && style !== "next") return;
+    e.preventDefault();
+    judge("knew");
+  });
+
+  // ================= Added features =================
+  var shownItem = null, shownAt = 0, lastRevealMs = null, wake = null, waking = false;
+
+  function el(tag, cls, txt){ var e = document.createElement(tag); if(cls) e.className = cls; if(txt != null) e.textContent = txt; return e; }
+  function dayKey(d){ return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
+
+  // ---- stats: per item and per day ----
+  function recordResult(id, res){
+    var k = res === "knew" ? "knew" : "missed";
+    var s = state.stats[id] || (state.stats[id] = { seen:0, knew:0, missed:0, ms:0, msN:0, last:null });
+    s.seen++; s[k]++; s.last = res;
+    if(lastRevealMs != null){ s.ms += lastRevealMs; s.msN++; }
+    var dk = dayKey(new Date());
+    var d = state.daily[dk] || (state.daily[dk] = { cards:0, knew:0, missed:0, secs:0 });
+    d.cards++; d[k]++;
+    if(shownAt) d.secs += Math.min(120, Math.round((Date.now() - shownAt) / 1000));
+    if(res === "missed" && state.session){
+      var m = state.session.missedIds || (state.session.missedIds = []);
+      if(m.indexOf(id) < 0) m.push(id);
+    }
+  }
+  function unrecord(id, res){
+    var k = res === "knew" ? "knew" : "missed";
+    var s = state.stats[id];
+    if(s){ s.seen = Math.max(0, s.seen - 1); s[k] = Math.max(0, s[k] - 1); }
+    var d = state.daily[dayKey(new Date())];
+    if(d){ d.cards = Math.max(0, d.cards - 1); d[k] = Math.max(0, d[k] - 1); }
+    if(res === "missed" && state.session && state.session.missedIds){
+      var i = state.session.missedIds.indexOf(id);
+      if(i > -1) state.session.missedIds.splice(i, 1);
+    }
+  }
+
+  // ---- weak spots + custom sessions ----
+  function weakItems(){
+    var out = [];
+    Object.keys(state.stats).forEach(function(id){
+      var s = state.stats[id];
+      if(!s || !s.missed || !s.seen || !wordById(parseItemId(id).wordId)) return;
+      var rate = s.missed / s.seen;
+      if(s.last === "missed" || rate >= 0.34) out.push({ id:id, score: rate * 10 + s.missed });
+    });
+    out.sort(function(a, b){ return b.score - a.score; });
+    return out.map(function(o){ return o.id; });
+  }
+  function startCustom(ids){
+    isPaused = false; stopAudio(); shownItem = null;
+    var items = ids.slice(); shuffle(items);
+    state.session = { mode:"weak", queue:items, skipStack:[], history:[], knew:0, missed:0, revealed:false, finished:false, lastJudge:null, missedIds:[] };
+    startPaceStopwatch();
+    save(); renderTrainer();
+  }
+
+  // ---- speech ----
+  function speak(t){
+    try{
+      if(!window.speechSynthesis || !t) return;
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(t);
+      u.lang = state.settings.ttsLang || "en-IN"; u.rate = 0.9;
+      speechSynthesis.speak(u);
+    }catch(e){}
+  }
+  function sayCurrent(){
+    var id = currentItemId(); if(!id) return;
+    var w = wordById(parseItemId(id).wordId); if(!w) return;
+    if(w.audio) playAudio(w.audio); else speak(w.text);
+  }
+
+  // ---- extra settings ----
+  function applyTextSize(){
+    ["sm","lg","xl"].forEach(function(c){ document.body.classList.remove("txt-" + c); });
+    var v = state.settings.cardText || "md";
+    if(v !== "md") document.body.classList.add("txt-" + v);
+  }
+  function syncExtraSettings(){
+    document.getElementById("roundLimit").value = state.settings.roundLimit || 0;
+    document.getElementById("paceSec").value = state.settings.paceSec || 30;
+    document.getElementById("paceModeSel").value = state.settings.paceMode || "stopwatch";
+    document.getElementById("paceStartTime").value = state.settings.paceStart || "08:00";
+    document.getElementById("paceEndTime").value = state.settings.paceEnd || "20:00";
+    document.getElementById("paceRangeRow").style.display = (state.settings.paceMode === "realtime") ? "" : "none";
+    document.getElementById("cardTextSel").value = state.settings.cardText || "md";
+    document.getElementById("autoPauseChk").checked = state.settings.autoPause !== false;
+    document.getElementById("keepAwakeChk").checked = state.settings.keepAwake !== false;
+    document.getElementById("ttsChk").checked = !!state.settings.tts;
+    document.getElementById("ttsLangSel").value = state.settings.ttsLang || "en-IN";
+    applyTextSize();
+  }
+  function bindSetting(id, prop, kind){
+    var e = document.getElementById(id);
+    e.addEventListener("change", function(){
+      state.settings[prop] = kind === "bool" ? e.checked : kind === "int" ? Math.max(0, parseInt(e.value, 10) || 0) : e.value;
+      save();
+      if(prop === "cardText") applyTextSize();
+      if(prop === "keepAwake") syncWake();
+    });
+  }
+  bindSetting("roundLimit", "roundLimit", "int");
+  document.getElementById("paceSec").addEventListener("change", function(e){
+    var v = Math.max(1, parseInt(e.target.value, 10) || 30);
+    e.target.value = v;
+    state.settings.paceSec = v;
+    save();
+  });
+  document.getElementById("paceModeSel").addEventListener("change", function(e){
+    state.settings.paceMode = e.target.value;
+    document.getElementById("paceRangeRow").style.display = (e.target.value === "realtime") ? "" : "none";
+    save();
+    updatePaceDisplay();
+  });
+  document.getElementById("paceStartTime").addEventListener("change", function(e){
+    state.settings.paceStart = e.target.value || "08:00";
+    save();
+    updatePaceDisplay();
+  });
+  document.getElementById("paceEndTime").addEventListener("change", function(e){
+    state.settings.paceEnd = e.target.value || "20:00";
+    save();
+    updatePaceDisplay();
+  });
+  bindSetting("cardTextSel", "cardText", "str");
+  bindSetting("autoPauseChk", "autoPause", "bool");
+  bindSetting("keepAwakeChk", "keepAwake", "bool");
+  bindSetting("ttsChk", "tts", "bool");
+  bindSetting("ttsLangSel", "ttsLang", "str");
+
+  // ---- keep the screen awake during a session ----
+  function syncWake(){
+    if(!navigator.wakeLock) return;
+    var want = state.settings.keepAwake !== false && state.session && !state.session.finished && document.body.classList.contains("on-trainer");
+    if(want && !wake && !waking){
+      waking = true;
+      navigator.wakeLock.request("screen").then(function(l){
+        wake = l; waking = false;
+        l.addEventListener("release", function(){ if(wake === l) wake = null; });
+      }).catch(function(){ waking = false; });
+    } else if(!want && wake){
+      try{ wake.release(); }catch(e){}
+      wake = null;
+    }
+  }
+
+  // ---- pause when the page is hidden, so timers never auto-miss while away ----
+  document.addEventListener("visibilitychange", function(){
+    if(document.hidden){
+      if(state.settings.autoPause !== false && state.session && !state.session.finished && timerKind && !isPaused) togglePause();
+    } else syncWake();
+  });
+
+  // ---- keyboard shortcuts ----
+  document.addEventListener("keydown", function(e){
+    if(e.ctrlKey || e.metaKey || e.altKey) return;
+    var tag = (e.target && e.target.tagName) || "";
+    if(/INPUT|TEXTAREA|SELECT/.test(tag)) return;
+    var panel = document.getElementById("panel-trainer");
+    if(!panel || !panel.classList.contains("active")) return;
+    var k = e.key.toLowerCase();
+    if(k === "f"){
+      e.preventDefault();
+      document.getElementById(document.body.classList.contains("focus-mode") ? "exitFocusBtn" : "focusModeBtn").click();
+      return;
+    }
+    var s = state.session;
+    if(!s || s.finished) return;
+    if(tag === "BUTTON" && (k === "enter" || k === " ")) return;
+    var used = true;
+    if(!s.revealed && (k === "enter" || k === " " || k === "r")) reveal();
+    else if(s.revealed && k === "k") judge("knew");
+    else if(s.revealed && (k === "m" || k === "x")) judge("missed");
+    else if(k === "arrowright" || k === "n") skipNext();
+    else if(k === "arrowleft" || k === "b") goBackAny();
+    else if(k === "u") undoJudge();
+    else if(k === "p") togglePause();
+    else if(k === "s") sayCurrent();
+    else used = false;
+    if(used) e.preventDefault();
+  });
+
+  // ---- library search + duplicate marking ----
+  function applyLibFilter(){
+    var q = ((document.getElementById("libSearch") || {}).value || "").trim().toLowerCase();
+    var rows = document.querySelectorAll("#wordList .word-row"), counts = {}, shown = 0, dups = 0;
+    rows.forEach(function(r){
+      var i = r.querySelector("input.inline-edit"), v = i ? i.value.trim().toLowerCase() : "";
+      if(v) counts[v] = (counts[v] || 0) + 1;
+    });
+    rows.forEach(function(r){
+      var i = r.querySelector("input.inline-edit"), v = i ? i.value.trim().toLowerCase() : "";
+      var hit = !q || v.indexOf(q) > -1;
+      r.style.display = hit ? "" : "none";
+      if(hit) shown++;
+      var isDup = !!v && counts[v] > 1;
+      r.classList.toggle("dup", isDup);
+      if(isDup) dups++;
+    });
+    var st = document.getElementById("libSearchStatus");
+    if(st) st.textContent = (q ? shown + " of " + rows.length + " shown. " : "") + (dups ? dups + " rows share a word with another row." : "");
+  }
+  document.getElementById("libSearch").addEventListener("input", applyLibFilter);
+
+  // ---- progress tab ----
+  function calcStreak(){
+    var d = new Date(), n = 0;
+    if(!(state.daily[dayKey(d)] || {}).cards) d.setDate(d.getDate() - 1);
+    while((state.daily[dayKey(d)] || {}).cards > 0){ n++; d.setDate(d.getDate() - 1); }
+    return n;
+  }
+  function bestStreak(){
+    var keys = Object.keys(state.daily).filter(function(k){ return state.daily[k].cards > 0; }).sort();
+    var best = 0, cur = 0, prev = null;
+    keys.forEach(function(k){
+      var t = new Date(k + "T00:00:00").getTime();
+      cur = (prev !== null && Math.round((t - prev) / 86400000) === 1) ? cur + 1 : 1;
+      if(cur > best) best = cur;
+      prev = t;
+    });
+    return best;
+  }
+  function pct(a, b){ return b ? Math.round(100 * a / b) + "%" : "–"; }
+  function statCard(val, label){ var c = el("div", "stat-card"); c.appendChild(el("b", null, val)); c.appendChild(el("span", null, label)); return c; }
+  function box(title){ var b = el("div", "lib-box"); b.appendChild(el("h3", null, title)); return b; }
+
+  function renderProgress(){
+    var root = document.getElementById("progressBody"); if(!root) return;
+    root.innerHTML = "";
+    var goal = state.goal || 20;
+    var t = state.daily[dayKey(new Date())] || { cards:0, knew:0, missed:0, secs:0 };
+    var seen = 0, knew = 0;
+    Object.keys(state.stats).forEach(function(id){ seen += state.stats[id].seen; knew += state.stats[id].knew; });
+    var totalItems = state.words.length * 2, mastered = Object.keys(state.mastery).length;
+
+    var b1 = box("Today");
+    var gw = el("div", "goal-wrap"), gf = el("div", "goal-fill" + (t.cards >= goal ? " done" : ""));
+    gf.style.width = Math.min(100, Math.round(100 * t.cards / goal)) + "%";
+    gw.appendChild(gf); b1.appendChild(gw);
+    var gl = el("div", "lib-row");
+    gl.appendChild(el("span", "status-text", t.cards + " of " + goal + " cards" + (t.cards >= goal ? " — goal reached" : "")));
+    var lab = el("label", "status-text", "daily goal ");
+    var gi = el("input"); gi.type = "number"; gi.min = "1"; gi.value = goal; gi.style.width = "64px";
+    gi.addEventListener("change", function(){ state.goal = Math.max(1, parseInt(gi.value, 10) || 20); save(); renderProgress(); });
+    lab.appendChild(gi); gl.appendChild(lab); b1.appendChild(gl);
+    root.appendChild(b1);
+
+    var b2 = box("Your numbers");
+    var g = el("div", "stat-grid");
+    g.appendChild(statCard(calcStreak() + " d", "day streak"));
+    g.appendChild(statCard(bestStreak() + " d", "best streak"));
+    g.appendChild(statCard(pct(t.knew, t.cards), "accuracy today"));
+    g.appendChild(statCard(String(seen), "cards, all time"));
+    g.appendChild(statCard(pct(knew, seen), "accuracy, all time"));
+    g.appendChild(statCard(t.secs >= 60 ? Math.round(t.secs / 60) + " min" : t.secs + " s", "time today"));
+    g.appendChild(statCard(pct(mastered, totalItems), "mastered"));
+    b2.appendChild(g); root.appendChild(b2);
+
+    var b3 = box("Last 14 days"), max = 1, days = [], i, d;
+    for(i = 13; i >= 0; i--){
+      d = new Date(); d.setDate(d.getDate() - i);
+      var r = state.daily[dayKey(d)], n = r ? r.cards : 0;
+      days.push({ d:d, n:n }); if(n > max) max = n;
+    }
+    var bars = el("div", "bars");
+    days.forEach(function(x){
+      var col = el("div", "bar-col");
+      col.title = dayKey(x.d) + ": " + x.n + " cards";
+      col.appendChild(el("span", null, x.n ? String(x.n) : ""));
+      var bar = el("div", "bar" + (x.n >= goal ? " hit" : ""));
+      bar.style.height = Math.max(2, Math.round(x.n / max * 62)) + "px";
+      col.appendChild(bar);
+      col.appendChild(el("span", null, "SMTWTFS".charAt(x.d.getDay())));
+      bars.appendChild(col);
+    });
+    b3.appendChild(bars); root.appendChild(b3);
+
+    var b4 = box("Hardest items");
+    var hard = Object.keys(state.stats).map(function(id){
+      var s = state.stats[id], p = parseItemId(id), w = wordById(p.wordId);
+      return (w && s.missed) ? { w:w, p:p, s:s } : null;
+    }).filter(Boolean).sort(function(a, b){
+      return b.s.missed - a.s.missed || (b.s.missed / b.s.seen) - (a.s.missed / a.s.seen);
+    }).slice(0, 8);
+    if(!hard.length) b4.appendChild(el("p", "hint", "Nothing yet. Words you miss will be listed here."));
+    hard.forEach(function(x){
+      var row = el("div", "hard-row");
+      row.appendChild(el("span", null, x.w.text + (x.p.dir === "s2w" ? "  (stroke→word)" : "  (word→stroke)")));
+      row.appendChild(el("small", null, "missed " + x.s.missed + " of " + x.s.seen + (x.s.msN ? " · avg " + (x.s.ms / x.s.msN / 1000).toFixed(1) + " s" : "")));
+      b4.appendChild(row);
+    });
+    var act = el("div", "lib-row");
+    var wb = el("button", "btn small", "Practise weak spots");
+    wb.addEventListener("click", function(){ document.querySelector('.tab-btn[data-tab="trainer"]').click(); startMode("weak"); });
+    var rb = el("button", "btn secondary small", "Reset statistics");
+    rb.addEventListener("click", function(){
+      if(!confirm("Clear all statistics and streaks? Mastery and your library stay.")) return;
+      state.stats = {}; state.daily = {}; save(); renderProgress();
+    });
+    act.appendChild(wb); act.appendChild(rb); b4.appendChild(act);
+    root.appendChild(b4);
+  }
+
+  // Exposed just so the small, separate Focus-mode fullscreen-toggle script
+  // (below, kept standalone on purpose) can stop the pace stopwatch when
+  // the person exits Focus mode entirely.
+  window.stopPaceStopwatch = stopPaceStopwatch;
+
+  // ---------------- init ----------------
+  load();
+  renderLibrary();
+  renderTrainer();
+  syncStyleButtons();
+  syncTapZoneButtons();
+
+})();
+</script>
+
+<script>
+// ---------------- Focus mode ----------------
+// Presentation layer on top of everything above: it never reads or writes
+// app state, never touches the trainer logic, and mainly toggles a class
+// on <body> (which the CSS above uses to hide every control except the
+// card itself) — that class toggle always works, even for a page opened
+// as a local file.
+//
+// On top of that it now also *attempts* the real Fullscreen API. That
+// call is blocked by browsers when the page is opened straight from disk
+// (file://...), so it silently fails there and you're left with just the
+// class-based layout, same as before. But if this file is ever hosted and
+// opened over http(s)://, the same button will additionally hide the
+// browser's own address bar / three-dot menu. Either way the try/catch
+// means it never breaks the button.
+(function(){
+  "use strict";
+  var focusBtn = document.getElementById("focusModeBtn");
+  var exitBtn = document.getElementById("exitFocusBtn");
+  if(!focusBtn || !exitBtn) return;
+
+  function requestFS(){
+    var el = document.documentElement;
+    var fn = el.requestFullscreen || el.webkitRequestFullscreen ||
+              el.mozRequestFullScreen || el.msRequestFullscreen;
+    if(!fn) return;
+    try{
+      var p = fn.call(el);
+      if(p && p.catch) p.catch(function(){ /* blocked (e.g. file://) — ignore */ });
+    }catch(e){ /* ignore */ }
+  }
+
+  function exitFS(){
+    var isFS = document.fullscreenElement || document.webkitFullscreenElement ||
+               document.mozFullScreenElement || document.msFullscreenElement;
+    if(!isFS) return;
+    var fn = document.exitFullscreen || document.webkitExitFullscreen ||
+             document.mozCancelFullScreen || document.msExitFullscreen;
+    if(!fn) return;
+    try{
+      var p = fn.call(document);
+      if(p && p.catch) p.catch(function(){});
+    }catch(e){ /* ignore */ }
+  }
+
+  function enterFocus(){
+    var trainerTab = document.querySelector('.tab-btn[data-tab="trainer"]');
+    if(trainerTab && !trainerTab.classList.contains("active")) trainerTab.click();
+    document.documentElement.classList.add("focus-mode");
+    document.body.classList.add("focus-mode");
+    window.scrollTo(0,0);
+    requestFS();
+  }
+
+  function exitFocus(){
+    document.documentElement.classList.remove("focus-mode");
+    document.body.classList.remove("focus-mode");
+    exitFS();
+    if(window.stopPaceStopwatch) window.stopPaceStopwatch();
+  }
+
+  focusBtn.addEventListener("click", enterFocus);
+  exitBtn.addEventListener("click", exitFocus);
+
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape" && document.body.classList.contains("focus-mode")) exitFocus();
+  });
+
+  // If the user exits fullscreen via the OS/browser itself (swipe, back
+  // gesture, etc.) rather than our ✕ button, drop focus-mode's class too
+  // so the UI doesn't stay hidden with no way back in.
+  ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"]
+    .forEach(function(evt){
+      document.addEventListener(evt, function(){
+        var isFS = document.fullscreenElement || document.webkitFullscreenElement ||
+                   document.mozFullScreenElement || document.msFullscreenElement;
+        if(!isFS && document.body.classList.contains("focus-mode")){
+          document.documentElement.classList.remove("focus-mode");
+          document.body.classList.remove("focus-mode");
+        }
+      });
+    });
+})();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+  });
+}
+</script>
+</body>
+</html>
