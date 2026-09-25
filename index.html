@@ -869,21 +869,20 @@
     display:none !important;
   }
 
-   :fullscreen .app-main,
+  :fullscreen .app-main,
 :-webkit-full-screen .app-main,
 body.focus-mode .app-main{
-  position:fixed;
-  inset:0;
   max-width:100%;
-  width:100%;
-  height:100%;
-  margin:0;
+  height:100vh;
+  height:100dvh;
   padding:0;
   display:flex;
   align-items:center;
   justify-content:center;
 }
+
   
+ 
   :fullscreen #panel-trainer,
   :-webkit-full-screen #panel-trainer,
   body.focus-mode #panel-trainer{
